@@ -1,0 +1,5 @@
+law_id,state,bill_number,title,enactment_date,effective_date,status,primary_source_url,local_text_path,source_format,amends_law_id,collection_status,notes
+CO-2024-SB205,CO,SB24-205,Consumer Protections for Artificial Intelligence,2024-05-17,,enacted,https://leg.colorado.gov/bills/sb24-205,data/raw/statutes/CO-2024-SB205.txt,html,,needs_text,Confirm current effective date and later amendments before coding
+TX-2025-HB149,TX,HB149,Texas Responsible Artificial Intelligence Governance Act,2025-06-22,2026-01-01,enacted,https://capitol.texas.gov/tlodocs/89R/billtext/html/HB00149F.htm,data/raw/statutes/TX-2025-HB149.txt,html,,needs_text,Use enrolled version and verify governor action
+CA-2025-SB53,CA,SB53,Transparency in Frontier Artificial Intelligence Act,2025-09-29,2026-01-01,enacted,https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB53,data/raw/statutes/CA-2025-SB53.txt,html,,needs_text,Verify chapter and operative dates in primary text
+

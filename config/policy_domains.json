@@ -1,0 +1,27 @@
+{
+  "prompt_version": "0.1.0",
+  "domains": {
+    "impact_assessment": ["impact assessment", "risk assessment", "consequential decision"],
+    "model_evaluation": ["model evaluation", "test", "testing", "red team", "performance"],
+    "human_oversight": ["human review", "human oversight", "human intervention", "individually review"],
+    "consumer_notice": ["notice", "disclose", "disclosure", "artificial intelligence interaction"],
+    "explanation_appeal": ["explanation", "appeal", "contest", "correct", "review the decision"],
+    "antidiscrimination": ["algorithmic discrimination", "discriminate", "protected class", "bias"],
+    "incident_reporting": ["incident report", "report an incident", "notify the attorney general"],
+    "frontier_safety": ["frontier model", "foundation model", "catastrophic risk", "safety framework"],
+    "child_safety": ["minor", "child", "children", "sexual exploitation", "self-harm"],
+    "health_restriction": ["medical necessity", "health care", "clinical", "prior authorization", "psychotherapy"],
+    "infrastructure": ["data center", "compute infrastructure", "electric grid", "permitting"],
+    "government_use": ["state agency", "governmental entity", "procurement", "public agency"],
+    "enforcement_authority": ["attorney general", "enforce", "investigate", "injunction"],
+    "private_right": ["private right of action", "civil action", "may bring an action"],
+    "penalty": ["civil penalty", "criminal penalty", "fine", "per violation"],
+    "exemption": ["exempt", "does not apply", "excluded", "small business"]
+  },
+  "strength_labels": {
+    "0": "absent",
+    "1": "disclosure_or_procedure",
+    "2": "assessment_mitigation_or_review",
+    "3": "prohibition_right_or_penalized_mandate"
+  }
+}

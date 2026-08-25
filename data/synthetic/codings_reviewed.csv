@@ -1,0 +1,7 @@
+coding_id,law_id,state,domain,covered,strength,regulated_actor,sector,effective_date,section_reference,evidence_quote,source_url,confidence,review_status,coder,prompt_version
+syn001,SYN-A,AA,consumer_notice,True,1,deployer,cross-sector,2026-01-01,Sec. 1,SYNTHETIC notice text,https://example.invalid/a,1.0,verified,synthetic,0.1.0
+syn002,SYN-A,AA,child_safety,True,3,platform,online services,2026-01-01,Sec. 2,SYNTHETIC child protection text,https://example.invalid/a,1.0,verified,synthetic,0.1.0
+syn003,SYN-B,BB,consumer_notice,True,2,deployer,cross-sector,2026-01-01,Sec. 4,SYNTHETIC stronger notice text,https://example.invalid/b,1.0,verified,synthetic,0.1.0
+syn004,SYN-B,BB,antidiscrimination,True,3,deployer,employment,2026-01-01,Sec. 5,SYNTHETIC discrimination text,https://example.invalid/b,1.0,verified,synthetic,0.1.0
+syn005,SYN-C,CC,government_use,True,2,agency,government,2026-01-01,Sec. 3,SYNTHETIC procurement text,https://example.invalid/c,1.0,verified,synthetic,0.1.0
+

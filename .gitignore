@@ -1,0 +1,17 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+data/raw/statutes/
+data/raw/ncsl_export.*
+data/interim/
+data/processed/*.csv
+data/processed/*.jsonl
+data/processed/synthetic_demo/
+data/cache/
+figures/*.png
+figures/*.pdf
+!figures/.gitkeep
