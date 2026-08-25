@@ -1,0 +1,3 @@
+weight_name,reference_date,source,table_id,source_url,status,notes
+population,2025-07-01,U.S. Census Bureau Population Estimates Program,NST-EST2025-POP,https://www.census.gov/data/tables/time-series/demo/popest/2020s-state-total.html,ready,"Vintage 2025 resident population estimates for 50 states and District of Columbia; release January 2026"
+employment,,U.S. Bureau of Labor Statistics,,,pending,"Do not populate until the analysis defines the appropriate total or sector-specific employment universe; use BLS source and year consistently by domain"
