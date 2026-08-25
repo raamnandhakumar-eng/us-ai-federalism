@@ -36,3 +36,22 @@ def test_cross_domain_overlaps_are_not_sent_twice() -> None:
 def test_normalization_collapses_line_breaks_for_quote_matching() -> None:
     source = "A deployer shall\nprovide   notice\tto the consumer."
     assert normalize_text(source) == "A deployer shall provide notice to the consumer."
+
+
+def test_california_digest_and_findings_are_excluded_from_retrieval() -> None:
+    text = """
+    LEGISLATIVE COUNSEL'S DIGEST
+    This bill would require a developer to publish a transparency report.
+    The people of the State of California do enact as follows:
+    SECTION 1. The Legislature finds and declares that transparency reports are important.
+    SEC. 2. 22757.12. A large frontier developer shall publish a transparency report.
+    """
+    passages = retrieve_passages(
+        text,
+        {"public_transparency": ["transparency report"]},
+        window=90,
+    )
+    assert len(passages) == 1
+    assert "shall publish a transparency report" in passages[0].text
+    assert "This bill would require" not in passages[0].text
+    assert "finds and declares" not in passages[0].text
