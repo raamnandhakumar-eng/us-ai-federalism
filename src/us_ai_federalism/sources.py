@@ -9,6 +9,13 @@ from .schema import LawRecord
 from .settings import PROJECT_ROOT
 
 REQUIRED_MANIFEST_COLUMNS = set(LawRecord.model_fields)
+OPTIONAL_MANIFEST_FIELDS = {
+    "enactment_date",
+    "effective_date",
+    "amends_law_id",
+    "inactive_from_date",
+    "superseded_by_law_id",
+}
 
 
 def read_manifest(path: str | Path) -> pd.DataFrame:
@@ -20,10 +27,10 @@ def read_manifest(path: str | Path) -> pd.DataFrame:
     if frame["law_id"].duplicated().any():
         duplicates = frame.loc[frame["law_id"].duplicated(), "law_id"].tolist()
         raise ValueError(f"Duplicate law_id values: {duplicates}")
-    optional = {"enactment_date", "effective_date", "amends_law_id"}
     for row in frame.to_dict(orient="records"):
         cleaned = {
-            key: (None if key in optional and not value else value) for key, value in row.items()
+            key: (None if key in OPTIONAL_MANIFEST_FIELDS and not value else value)
+            for key, value in row.items()
         }
         LawRecord.model_validate(cleaned)
     return frame
