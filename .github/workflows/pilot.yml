@@ -10,10 +10,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: us-ai-federalism-live-pilot
+  cancel-in-progress: false
+
 jobs:
   pilot:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -25,14 +29,20 @@ jobs:
       - name: Install
         run: pip install -e ".[dev]"
 
-      - name: Fetch primary sources
+      - name: Run tests before paid calls
         run: |
-          uaf fetch-sources --limit 3
+          ruff check .
+          pytest -q
+
+      - name: Fetch and validate primary sources
+        run: |
+          # Fetch the complete small validation manifest, including historical amendment-chain text.
+          uaf fetch-sources
           uaf validate-sources
 
       - name: Enforce pilot budget
         run: |
-          uaf estimate-cost --limit 3 > /tmp/cost.json
+          uaf estimate-cost --limit 8 > /tmp/cost.json
           python - <<'PY'
           import json
           from pathlib import Path
@@ -48,7 +58,7 @@ jobs:
           print(f"Preflight passed: ${estimate['usd']:.4f} <= ${ceiling:.2f}")
           PY
 
-      - name: Code pilot laws
+      - name: Code diverse pilot laws
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
@@ -57,7 +67,7 @@ jobs:
             exit 1
           fi
           uaf code-laws \
-            --limit 3 \
+            --limit 8 \
             --max-spend 1.00 \
             --output data/processed/codings_unreviewed.csv
 
@@ -76,9 +86,10 @@ jobs:
               "run_id": os.environ["GITHUB_RUN_ID"],
               "workflow": os.environ["GITHUB_WORKFLOW"],
               "model": "claude-haiku-4-5-20251001",
-              "pilot_law_limit": 3,
+              "pilot_law_limit": 8,
               "hard_cost_ceiling_usd": 1.0,
               "review_status": "unreviewed",
+              "purpose": "diverse ontology and temporal-validity validation",
           }
           path = Path("data/processed/run_manifest.json")
           path.parent.mkdir(parents=True, exist_ok=True)
