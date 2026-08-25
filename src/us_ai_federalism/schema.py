@@ -20,6 +20,7 @@ class ObligationDomain(str, Enum):
     model_evaluation = "model_evaluation"
     human_oversight = "human_oversight"
     consumer_notice = "consumer_notice"
+    developer_documentation = "developer_documentation"
     public_transparency = "public_transparency"
     explanation_appeal = "explanation_appeal"
     antidiscrimination = "antidiscrimination"
