@@ -1,0 +1,35 @@
+name: source bundle
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - config/source_bundle_trigger.txt
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Fetch official source texts
+        run: |
+          uaf fetch-sources
+          uaf validate-sources
+      - name: Upload source texts and receipts
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-bundle-${{ github.run_id }}
+          retention-days: 7
+          path: |
+            data/raw/statutes/*.txt
+            data/interim/source_receipts/*.json
