@@ -15,6 +15,9 @@ def test_project_source_manifest_parses_with_transport_metadata() -> None:
 
     connecticut = manifest.loc[manifest["law_id"] == "CT-2023-SB1103"].iloc[0]
     assert connecticut["transport_policy"] == "official_host_tls_fallback"
+    assert connecticut["expected_raw_sha256"] == (
+        "2bfb035054c6399424eaba95bb7cf3abc3fdfefaa97dcb95eef9d4590a5c586a"
+    )
     assert connecticut["expected_text_marker"] == "Public Act No. 23-16"
     assert connecticut["amends_law_id"] == ""
     assert connecticut["mixed_effective_dates"] == "true"
