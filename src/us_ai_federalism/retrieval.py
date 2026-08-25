@@ -18,6 +18,29 @@ def normalize_text(text: str) -> str:
     return re.sub(r"\s+", " ", text.replace("\r\n", "\n").replace("\r", "\n")).strip()
 
 
+def _operative_search_start(text: str) -> int:
+    """Return the first character eligible for obligation retrieval.
+
+    California bill-text pages include a Legislative Counsel's Digest before the enacted statutory
+    language. The digest is valuable metadata but is not the operative provision. When the standard
+    enactment marker is present, search only the enacted body. If Section 1 is expressly a findings
+    section, begin at Section 2 so findings are not mistaken for duties.
+    """
+    lower = text.lower()
+    enactment_marker = "the people of the state of california do enact as follows:"
+    marker_index = lower.find(enactment_marker)
+    if marker_index < 0:
+        return 0
+
+    body_start = marker_index + len(enactment_marker)
+    early_body = lower[body_start : body_start + 5_000]
+    if "the legislature finds and declares" in early_body[:1_500]:
+        section_two = re.search(r"\bsec\.\s*2\.", early_body)
+        if section_two is not None:
+            return body_start + section_two.start()
+    return body_start
+
+
 def _overlap_ratio(left: tuple[int, int], right: tuple[int, int]) -> float:
     start = max(left[0], right[0])
     end = min(left[1], right[1])
@@ -34,24 +57,21 @@ def retrieve_passages(
     max_passage_chars: int = 5000,
     max_total_chars: int = 32000,
 ) -> list[Passage]:
-    """Retrieve keyword windows once, globally deduplicating overlaps across domains.
-
-    The old implementation built a separate passage set for every policy domain. The same statutory
-    section could therefore be sent to the model many times under different domain hints. This
-    version merges substantially overlapping windows across all domains, preserves the combined
-    hints, and caps total retrieved text for predictable cost.
-    """
+    """Retrieve keyword windows once, globally deduplicating overlaps across domains."""
     clean = normalize_text(text)
     lower = clean.lower()
+    search_start = _operative_search_start(clean)
     candidates: list[tuple[int, int, str]] = []
 
     for domain, terms in domains.items():
         for term in terms:
             needle = term.lower()
             for match in re.finditer(re.escape(needle), lower):
+                if match.start() < search_start:
+                    continue
                 candidates.append(
                     (
-                        max(0, match.start() - window),
+                        max(search_start, match.start() - window),
                         min(len(clean), match.end() + window),
                         domain,
                     )
