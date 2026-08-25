@@ -1,0 +1,30 @@
+{
+  "substantive": [
+    "impact_assessment",
+    "risk_management",
+    "model_evaluation",
+    "human_oversight",
+    "consumer_notice",
+    "developer_documentation",
+    "public_transparency",
+    "explanation_appeal",
+    "antidiscrimination",
+    "incident_reporting",
+    "frontier_safety",
+    "harmful_use_restriction",
+    "child_safety",
+    "health_restriction",
+    "synthetic_content",
+    "whistleblower_protection",
+    "infrastructure",
+    "government_use"
+  ],
+  "enforcement": [
+    "enforcement_authority",
+    "private_right",
+    "penalty"
+  ],
+  "scope": [
+    "exemption"
+  ]
+}
