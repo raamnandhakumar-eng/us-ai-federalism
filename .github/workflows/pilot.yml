@@ -5,12 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - .github/workflows/pilot.yml
-      - config/source_manifest.csv
-      - src/us_ai_federalism/cli.py
-      - src/us_ai_federalism/coding.py
-      - src/us_ai_federalism/settings.py
-      - src/us_ai_federalism/source_fetch.py
+      - config/pilot_trigger.txt
 
 permissions:
   contents: read
