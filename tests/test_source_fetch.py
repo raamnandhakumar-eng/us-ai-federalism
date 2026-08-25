@@ -25,21 +25,17 @@ def test_short_html_can_be_extracted_before_length_validation() -> None:
 
 
 def test_line_numbered_legislative_pdf_page_is_cleaned() -> None:
-    page = "\n".join(
-        [
-            "S. 8828 4",
-            "1 A large frontier developer shall write, implement, comply with, and",
-            "2 clearly and conspicuously publish on its internet website a fron-",
-            "3 tier AI framework that applies to its frontier models.",
-            "4 The framework shall describe risk management procedures.",
-            "5 A frontier developer shall report a critical safety incident.",
-            "6 The report shall be transmitted to the office.",
-            "7 The office may adopt regulations.",
-            "8 These duties are cumulative with other law.",
-            "9 Nothing in this section creates a private right of action.",
-            "10 This section applies to frontier models.",
-        ]
-    )
+    page = """S. 8828 4
+1 A large frontier developer shall write, implement, comply with, and
+2 clearly and conspicuously publish on its internet website a fron-
+3 tier AI framework that applies to its frontier models.
+4 The framework shall describe risk management procedures.
+5 A frontier developer shall report a critical safety incident.
+6 The report shall be transmitted to the office.
+7 The office may adopt regulations.
+8 These duties are cumulative with other law.
+9 Nothing in this section creates a private right of action.
+10 This section applies to frontier models."""
     cleaned = _clean_pdf_page(page)
     assert "S. 8828 4" not in cleaned
     assert "1 A large" not in cleaned
