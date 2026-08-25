@@ -8,7 +8,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 DEFAULT_MAX_SPEND = 8.0
 CODING_MAX_OUTPUT_TOKENS = 5_000
-PROMPT_VERSION = "0.2.1"
+PROMPT_VERSION = "0.3.0"
 
 # USD per million tokens. Verified against Anthropic's published pricing on 2026-08-25.
 MODEL_PRICING = {
