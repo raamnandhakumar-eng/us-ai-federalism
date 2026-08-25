@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pandas as pd
+
 from us_ai_federalism.sources import read_manifest
 
 
@@ -20,3 +22,13 @@ def test_project_source_manifest_parses_with_transport_metadata() -> None:
     historical_colorado = manifest.loc[manifest["law_id"] == "CO-2024-SB205"].iloc[0]
     assert historical_colorado["inactive_from_date"] == "2026-05-14"
     assert historical_colorado["superseded_by_law_id"] == "CO-2026-SB189"
+
+
+def test_census_population_universe_is_complete_and_reconciles() -> None:
+    states = pd.read_csv("config/state_universe.csv")
+    assert len(states) == 51
+    assert states["state"].nunique() == 51
+    assert states["population"].notna().all()
+    assert (states["population"] > 0).all()
+    assert set(states["weight_source_year"]) == {2025}
+    assert int(states["population"].sum()) == 341_784_857
