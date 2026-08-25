@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import ssl
 import time
 from dataclasses import asdict, dataclass
@@ -120,11 +121,54 @@ def _download(
     return payload, content_type, resolved_url, False
 
 
+def _is_pdf_header(line: str) -> bool:
+    compact = line.strip()
+    return bool(
+        re.fullmatch(r"[A-Z]\.?\s*\d+[A-Z-]*\s+\d+", compact)
+        or re.fullmatch(r"PAGE\s+\d+[-–].+", compact, flags=re.IGNORECASE)
+        or re.fullmatch(r".+Public Act No\.\s*\S+\s+\d+\s+of\s+\d+", compact)
+    )
+
+
+def _clean_pdf_page(text: str) -> str:
+    """Remove recurring legislative-PDF artifacts without rewriting legal words.
+
+    Some official bill PDFs, especially New York Senate PDFs, extract with a printed line number
+    before nearly every text line and page labels between clauses. Those artifacts caused otherwise
+    verbatim model quotations to fail deterministic provenance checks. We remove line numbers only
+    when the page is strongly detected as line-numbered, and dehyphenate only a word explicitly
+    split at a line ending.
+    """
+
+    lines = [line.rstrip() for line in text.splitlines() if line.strip()]
+    if not lines:
+        return ""
+
+    numbered = sum(bool(re.match(r"^\s*\d{1,2}\s+\S", line)) for line in lines)
+    line_numbered_page = numbered >= 8 and numbered / len(lines) >= 0.45
+
+    cleaned: list[str] = []
+    for raw in lines:
+        line = raw.strip()
+        if _is_pdf_header(line):
+            continue
+        if line_numbered_page:
+            line = re.sub(r"^\d{1,2}\s+", "", line).strip()
+        if not line or _is_pdf_header(line):
+            continue
+
+        if cleaned and cleaned[-1].endswith("-") and re.match(r"^[a-z]", line):
+            cleaned[-1] = cleaned[-1][:-1] + line
+        else:
+            cleaned.append(line)
+    return "\n".join(cleaned)
+
+
 def _pdf_text(payload: bytes) -> str:
     reader = PdfReader(BytesIO(payload))
     if reader.is_encrypted:
         raise ValueError("Encrypted PDF cannot be processed")
-    return "\n\n".join(page.extract_text() or "" for page in reader.pages)
+    return "\n\n".join(_clean_pdf_page(page.extract_text() or "") for page in reader.pages)
 
 
 def _html_text(payload: bytes) -> str:
