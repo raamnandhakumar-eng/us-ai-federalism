@@ -1,2 +1,2 @@
-protocol-v0.2 pilot retry
-Retried after Anthropic parse API compatibility fix and free CI success on 2026-08-25.
+protocol-v0.2.1 validation pilot
+Validate operative-text filtering, developer documentation, explicit negative enforcement evidence, and refined strength coding.
