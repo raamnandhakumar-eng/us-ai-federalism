@@ -4,7 +4,7 @@
 
 An empirical U.S. AI federalism project measuring which public protections would be preserved, displaced, or standardized under alternative federal preemption frameworks.
 
-> **Research status:** pre-analysis design stage. The repository contains a preregistration-ready protocol, source manifest, validation rules, simulation code, and synthetic tests. It does **not** yet report findings from the completed statutory universe.
+> **Research status:** pre-analysis design and validation stage. A paid three-law pipeline pilot has run successfully, but its labels remain unreviewed and are not findings. The statutory universe is not yet frozen. See the [pilot validation note](docs/pilot_validation.md).
 
 **Original contribution:** an obligation-level estimate of how federal AI ceilings, carve-outs, and
 floors would change population-weighted protection coverage and cross-state regulatory
@@ -39,9 +39,15 @@ The primary sample is the universe of enacted U.S. state AI statutes from Januar
 
 The coding unit is:
 
-`state × law × enforceable obligation × regulated actor × sector × effective year`
+`state × law × enforceable obligation × regulated actor × sector × effective period`
 
-Each obligation is linked to the controlling statutory text, section or page, source URL, coder, confidence score, and human-review status. Claude produces structured first-pass labels only. A human reviewer verifies every retained label against the primary text.
+Each obligation is linked to the controlling statutory text, section or page, source URL, coder, confidence score, human-review status, operative start date, and verified inactivity date when applicable. Claude produces structured first-pass labels only. A human reviewer verifies every retained label against the primary text.
+
+A dated snapshot includes an obligation only when:
+
+`effective_date <= analysis_date < inactive_from_date`
+
+A blank inactivity date means no verified end date has been identified. Statutes with mixed section-level operative dates require an obligation-level effective date before a positive row can enter a dated estimate.
 
 ### Primary outcomes
 
@@ -76,9 +82,11 @@ uaf estimate-cost --manifest config/source_manifest.csv
 export ANTHROPIC_API_KEY="your-key-here"
 uaf code-laws --manifest config/source_manifest.csv --limit 10 --max-spend 1.00
 
-# 5. Review model labels, apply adjudications, then build estimates
+# 5. Review model labels, apply adjudications, then build a dated snapshot
 uaf apply-reviews
-uaf analyze --codings data/processed/codings_reviewed.csv
+uaf analyze \
+  --codings data/processed/codings_reviewed.csv \
+  --analysis-date 2026-08-25
 
 # 6. Run tests
 pytest
@@ -90,6 +98,8 @@ The API runner defaults to Claude Haiku 4.5, hashes every request, reuses cached
 
 - Freeze the source universe and analysis plan before full coding.
 - Use primary legal text for final labels. NCSL supplies discovery metadata, not final legal interpretation.
+- Preserve amendment and supersession chains rather than treating enactment text as permanently current.
+- Require obligation-level dates for statutes with mixed operative dates.
 - Require a quotation and section reference for each positive code.
 - Double-code at least 20% of statutes and report agreement by domain.
 - Resolve disagreements without showing reviewers the simulated policy result.
@@ -101,7 +111,7 @@ The API runner defaults to Claude Haiku 4.5, hashes every request, reuses cached
 ```text
 config/                 policy domains, sources, and scenario parameters
 data/                   raw-text instructions and generated outputs
-docs/                   research design, codebook, and policy scenarios
+docs/                   research design, codebook, validation, and policy scenarios
 paper/                  pre-analysis manuscript and result placeholders
 src/us_ai_federalism/   ingestion, coding, validation, metrics, and figures
 tests/                  synthetic unit and integration tests
