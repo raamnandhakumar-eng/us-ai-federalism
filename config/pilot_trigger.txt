@@ -1,2 +1,2 @@
-protocol-v0.3.1 diverse temporal validation pilot
-Retry after correcting the canonical Connecticut General Assembly source endpoint. Validate current controlling texts, amendment chains, mixed effective dates, future-effective laws, and domain coverage across eight enacted sources.
+protocol-v0.3.2 diverse temporal validation pilot
+Run after adding the audited source-level TLS fallback for the Connecticut General Assembly. Validate controlling texts, amendment chains, mixed effective dates, future-effective laws, source integrity, and domain coverage across eight enacted sources.
