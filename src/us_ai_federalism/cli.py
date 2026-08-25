@@ -65,10 +65,14 @@ def command_fetch_sources(args: argparse.Namespace) -> int:
                 output_path=output,
                 receipt_path=receipt,
                 minimum_characters=args.minimum_characters,
+                transport_policy=row["transport_policy"],
+                expected_raw_sha256=row["expected_raw_sha256"],
+                expected_text_marker=row["expected_text_marker"],
             )
+            transport = "verified TLS" if result.tls_verified else "audited TLS fallback"
             print(
                 f"{result.law_id}: {result.text_characters:,} characters; "
-                f"sha256 {result.text_sha256[:12]}"
+                f"sha256 {result.text_sha256[:12]}; {transport}"
             )
         except Exception as exc:  # noqa: BLE001 - report every failed source in bulk collection
             failures.append(row["law_id"])
@@ -218,103 +222,76 @@ def command_analyze(args: argparse.Namespace) -> int:
     estimates_all["domain_role"] = estimates_all["domain"].map(role_lookup)
 
     substantive = estimates_all[estimates_all["domain_role"] == "substantive"].copy()
+    if substantive.empty:
+        raise ValueError("No substantive policy domains are available for the requested analysis")
+
     effects = scenario_effects(substantive)
-    effects["domain_role"] = "substantive"
-    legal_structure = estimates_all[estimates_all["domain_role"] != "substantive"].copy()
-
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    substantive.to_csv(output_dir / "scenario_estimates.csv", index=False)
-    effects.to_csv(output_dir / "scenario_effects.csv", index=False)
-    legal_structure.to_csv(output_dir / "legal_structure_estimates.csv", index=False)
-    estimates_all.to_csv(output_dir / "scenario_estimates_all_domains.csv", index=False)
-    plot_coverage(substantive, args.figure)
-    print(f"Analysis snapshot: {args.analysis_date}")
-    print(f"Wrote substantive protection estimates to {output_dir / 'scenario_estimates.csv'}")
-    print(f"Wrote enforcement/scope diagnostics to {output_dir / 'legal_structure_estimates.csv'}")
-    print(f"Wrote figure to {args.figure}")
-    if floor_strengths is not None:
-        print(f"Used domain-specific federal floor from {args.floor_config}")
-    if args.include_unreviewed:
-        print("WARNING: output includes unreviewed model labels and is not a research finding.")
-    return 0
-
-
-def command_apply_reviews(args: argparse.Namespace) -> int:
-    codings = pd.read_csv(args.codings)
-    reviews = pd.read_csv(args.reviews)
-    reviewed = apply_reviews(codings, reviews)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    reviewed.to_csv(output, index=False)
-    counts = reviewed["review_status"].value_counts().to_dict()
-    print(f"Wrote adjudicated coding data to {output}")
-    print(json.dumps(counts, indent=2))
+    substantive.to_csv(output, index=False)
+    effects.to_csv(output.with_name(f"{output.stem}_effects.csv"), index=False)
+
+    figure_path = Path(args.figure)
+    figure_path.parent.mkdir(parents=True, exist_ok=True)
+    plot_coverage(substantive, figure_path)
+    print(f"Wrote scenario estimates to {output}")
+    print(f"Wrote scenario effects to {output.with_name(f'{output.stem}_effects.csv')}")
+    print(f"Wrote figure to {figure_path}")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="uaf", description="U.S. AI federalism research pipeline")
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser(prog="uaf")
+    sub = parser.add_subparsers(dest="command", required=True)
 
-    validate = subparsers.add_parser("validate-sources")
-    validate.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
-    validate.set_defaults(func=command_validate_sources)
+    validate_parser = sub.add_parser("validate-sources")
+    validate_parser.add_argument("--manifest", default="config/source_manifest.csv")
+    validate_parser.set_defaults(func=command_validate_sources)
 
-    fetch = subparsers.add_parser("fetch-sources")
-    fetch.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
-    fetch.add_argument("--limit", type=int)
-    fetch.add_argument("--minimum-characters", type=int, default=2_000)
-    fetch.add_argument(
-        "--receipt-dir", default=PROJECT_ROOT / "data" / "interim" / "source_receipts"
-    )
-    fetch.set_defaults(func=command_fetch_sources)
+    fetch_parser = sub.add_parser("fetch-sources")
+    fetch_parser.add_argument("--manifest", default="config/source_manifest.csv")
+    fetch_parser.add_argument("--limit", type=int)
+    fetch_parser.add_argument("--receipt-dir", default="data/interim/source_receipts")
+    fetch_parser.add_argument("--minimum-characters", type=int, default=2_000)
+    fetch_parser.set_defaults(func=command_fetch_sources)
 
-    estimate = subparsers.add_parser("estimate-cost")
-    estimate.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
-    estimate.add_argument("--model", default=model_name())
-    estimate.add_argument("--limit", type=int)
-    estimate.add_argument("--output-tokens", type=int, default=CODING_MAX_OUTPUT_TOKENS)
-    estimate.add_argument("--batch", action="store_true")
-    estimate.set_defaults(func=command_estimate_cost)
+    estimate_parser = sub.add_parser("estimate-cost")
+    estimate_parser.add_argument("--manifest", default="config/source_manifest.csv")
+    estimate_parser.add_argument("--limit", type=int)
+    estimate_parser.add_argument("--model", default=model_name())
+    estimate_parser.add_argument("--output-tokens", type=int, default=CODING_MAX_OUTPUT_TOKENS)
+    estimate_parser.add_argument("--batch", action="store_true")
+    estimate_parser.set_defaults(func=command_estimate_cost)
 
-    code = subparsers.add_parser("code-laws")
-    code.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
-    code.add_argument("--model", default=model_name())
-    code.add_argument("--limit", type=int)
-    code.add_argument("--max-spend", type=float, default=max_spend())
-    code.add_argument(
-        "--output", default=PROJECT_ROOT / "data" / "processed" / "codings_unreviewed.csv"
-    )
-    code.set_defaults(func=command_code_laws)
+    code_parser = sub.add_parser("code-laws")
+    code_parser.add_argument("--manifest", default="config/source_manifest.csv")
+    code_parser.add_argument("--limit", type=int)
+    code_parser.add_argument("--model", default=model_name())
+    code_parser.add_argument("--max-spend", type=float, default=max_spend())
+    code_parser.add_argument("--output", default="data/processed/codings_unreviewed.csv")
+    code_parser.set_defaults(func=command_code_laws)
 
-    review = subparsers.add_parser("apply-reviews")
-    review.add_argument(
-        "--codings", default=PROJECT_ROOT / "data" / "processed" / "codings_unreviewed.csv"
+    review_parser = sub.add_parser("apply-reviews")
+    review_parser.add_argument("--codings", required=True)
+    review_parser.add_argument("--reviews", required=True)
+    review_parser.add_argument("--output", default="data/processed/codings_reviewed.csv")
+    review_parser.set_defaults(
+        func=lambda args: apply_reviews(args.codings, args.reviews, args.output) or 0
     )
-    review.add_argument("--reviews", default=PROJECT_ROOT / "data" / "raw" / "review_template.csv")
-    review.add_argument(
-        "--output", default=PROJECT_ROOT / "data" / "processed" / "codings_reviewed.csv"
-    )
-    review.set_defaults(func=command_apply_reviews)
 
-    analyze = subparsers.add_parser("analyze")
-    analyze.add_argument(
-        "--codings", default=PROJECT_ROOT / "data" / "processed" / "codings_reviewed.csv"
-    )
-    analyze.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
-    analyze.add_argument("--states", default=PROJECT_ROOT / "config" / "state_universe.csv")
-    analyze.add_argument("--analysis-date", required=True, help="Snapshot date in YYYY-MM-DD format")
-    analyze.add_argument("--weight-column", default="weight")
-    analyze.add_argument("--floor-strength", type=int, default=1)
-    analyze.add_argument(
-        "--floor-config",
-        help="CSV with domain,minimum_strength columns; overrides --floor-strength",
-    )
-    analyze.add_argument("--include-unreviewed", action="store_true")
-    analyze.add_argument("--output-dir", default=PROJECT_ROOT / "data" / "processed")
-    analyze.add_argument("--figure", default=PROJECT_ROOT / "figures" / "coverage_scenarios.png")
-    analyze.set_defaults(func=command_analyze)
+    analyze_parser = sub.add_parser("analyze")
+    analyze_parser.add_argument("--codings", required=True)
+    analyze_parser.add_argument("--manifest", default="config/source_manifest.csv")
+    analyze_parser.add_argument("--states", default="config/state_universe.csv")
+    analyze_parser.add_argument("--weight-column", default="population")
+    analyze_parser.add_argument("--analysis-date", required=True)
+    analyze_parser.add_argument("--floor-strength", type=int, default=1)
+    analyze_parser.add_argument("--floor-config")
+    analyze_parser.add_argument("--include-unreviewed", action="store_true")
+    analyze_parser.add_argument("--output", default="data/processed/scenario_estimates.csv")
+    analyze_parser.add_argument("--figure", default="figures/scenario_coverage.png")
+    analyze_parser.set_defaults(func=command_analyze)
+
     return parser
 
 
@@ -322,7 +299,3 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
     raise SystemExit(args.func(args))
-
-
-if __name__ == "__main__":
-    main()
