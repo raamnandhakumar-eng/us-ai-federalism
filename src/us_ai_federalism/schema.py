@@ -53,6 +53,9 @@ class LawRecord(BaseModel):
     local_text_path: str
     source_format: str
     amends_law_id: str | None = None
+    inactive_from_date: date | None = None
+    superseded_by_law_id: str | None = None
+    mixed_effective_dates: bool = False
     collection_status: str
     notes: str = ""
 
