@@ -1,0 +1,53 @@
+freeze_date,state,bill_number,year,category,status,include_confirmatory,temporal_role,discovery_source,reason
+2026-08-25,CA,SB243,2025,chatbot,enacted,true,current,FPF_2023_2025,Companion-chatbot disclosure safety reporting and private-right provisions map to fixed domains
+2026-08-25,ME,LD1727,2025,chatbot,enacted,true,current,FPF_2023_2025,Consumer chatbot disclosure and anti-deception duties map to consumer_notice
+2026-08-25,NH,HB143,2025,chatbot,enacted,true,current,FPF_2023_2025,Child-harm restrictions and private action map to child_safety harmful_use and private_right
+2026-08-25,NY,S3008C,2025,chatbot,enacted,true,current,FPF_2023_2025,Companion safeguards disclosure and AG enforcement map to fixed domains
+2026-08-25,UT,HB452,2025,chatbot_health,enacted,true,current,FPF_2023_2025,Mental-health chatbot disclosure data-use safeguards and defense map to fixed domains
+2026-08-25,AR,HB1876,2025,generative_AI_IP,enacted,false,current,FPF_2023_2025,Ownership rule is outside the precommitted governance-obligation codebook
+2026-08-25,CA,SB942,2024,synthetic_content,enacted,true,historical,FPF_2023_2025,AI transparency act retained as amendment-chain history; AB853 controls amended future obligations
+2026-08-25,CA,AB853,2025,synthetic_content,enacted,true,current,FPF_2023_2025,Amends SB942 with provenance and capture-device obligations
+2026-08-25,CA,AB3030,2024,health_notice,enacted,true,current,FPF_2023_2025,Patient AI disclosure human-contact and exception provisions map to fixed domains
+2026-08-25,CA,AB2013,2024,training_data_transparency,enacted,true,current,FPF_2023_2025,Public training-data disclosure maps to public_transparency
+2026-08-25,UT,SB149,2024,generative_AI_disclosure,enacted,true,historical,FPF_2023_2025,Original Utah AI Policy Act retained as amendment-chain history
+2026-08-25,UT,SB226,2025,generative_AI_disclosure,enacted,true,current,FPF_2023_2025,Amends disclosure scope and safe harbor under Utah AI Policy Act
+2026-08-25,UT,SB332,2025,generative_AI_disclosure,enacted,true,current,FPF_2023_2025,Extends operative period of Utah AI Policy Act
+2026-08-25,CA,AB316,2025,AI_liability,enacted,true,current,FPF_2023_2025,AI-specific liability-defense rule is retained as scope structure
+2026-08-25,TX,HB149,2025,comprehensive_AI,enacted,true,current,FPF_2023_2025,TRAIGA creates multiple substantive government enforcement and scope provisions
+2026-08-25,MT,SB212,2025,critical_infrastructure,enacted,true,current,FPF_2023_2025,Critical-AI infrastructure risk-management obligations map to infrastructure and risk_management
+2026-08-25,CA,SB53,2025,frontier_AI,enacted,true,current,FPF_2023_2025,Frontier safety transparency incident and whistleblower duties map to fixed domains
+2026-08-25,NY,S8828,2026,frontier_AI,enacted,true,current,primary_amendment_review,Controlling 2026 RAISE chapter amendment replaces prior 2025 frontier text for future snapshot
+2026-08-25,CA,AB489,2025,health_AI,enacted,true,current,FPF_2023_2025,AI health-profession title restrictions and regulator authority map to fixed domains
+2026-08-25,IL,HB1806,2025,health_AI,enacted,true,current,FPF_2023_2025,Therapy AI restrictions disclosure consent and exemptions map to fixed domains
+2026-08-25,NV,AB406,2025,health_AI,enacted,true,current,FPF_2023_2025,Mental-health AI prohibitions and exceptions map to health_restriction and scope
+2026-08-25,TX,SB1188,2025,health_AI,enacted,true,current,FPF_2023_2025,Diagnostic AI human review and patient disclosure map to health and notice domains
+2026-08-25,CO,SB205,2024,high_risk_AI,enacted,true,historical,FPF_2023_2025,Superseded Colorado AI Act retained only for temporal history
+2026-08-25,CO,SB189,2026,high_risk_AI,enacted,true,current,primary_amendment_review,Controlling repeal-and-reenactment of Colorado automated decision provisions
+2026-08-25,CT,SB1295,2025,privacy_ADMT,enacted,true,current,FPF_2023_2025,Profiling impact-assessment contest and disclosure provisions map to fixed domains
+2026-08-25,CA,AB1008,2024,privacy_definition,enacted,false,current,FPF_2023_2025,Definition-only CCPA amendment does not independently create an AI-specific operative obligation
+2026-08-25,MN,HF4757,2024,privacy_profiling,enacted,true,current,FPF_2023_2025,Consumer profiling explanation and challenge rights map to explanation_appeal
+2026-08-25,IL,HB3773,2024,employment_AI,enacted,true,current,FPF_2023_2025,Employment discrimination prohibition and worker notice map to fixed domains
+2026-08-25,NYC,LL144,2023,employment_AI,enacted,false,current,FPF_2023_2025,Municipal law excluded by preregistered geography rule
+2026-08-25,TN,HB2091,2024,AI_IP,enacted,false,current,FPF_2023_2025,Voice likeness property-right law is outside fixed governance-obligation codebook
+2026-08-25,DE,HJR7,2025,AI_innovation,enacted,false,current,FPF_2023_2025,Joint resolution and sandbox study direction excluded as nonbinding study-style measure
+2026-08-25,CT,SB1103,2023,government_AI,enacted,true,current,primary_pilot,State-agency AI inventory assessment policy and government-use duties map to fixed domains
+2026-08-25,CT,SB5,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted chatbot transparency parental content-safety and harm-response duties
+2026-08-25,CO,HB1263,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted conversational-AI age child-safety disclosure and harm-response duties
+2026-08-25,GA,SB540,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted chatbot disclosure age child-safety and harm-response duties
+2026-08-25,HI,SB3001,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted chatbot disclosure parental child-safety and harm-response duties
+2026-08-25,IA,SF2417,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted chatbot disclosure parental child-safety and harm-response duties
+2026-08-25,ID,SB1297,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted chatbot minor disclosure professional-service and harm-response duties
+2026-08-25,NE,LB525,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted chatbot minor disclosure professional-service and harm-response duties
+2026-08-25,NY,S9008C,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted FY27 chatbot age and parental-control provisions
+2026-08-25,OR,SB1546,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted chatbot transparency professional-service content and harm-response duties
+2026-08-25,RI,SB2195,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted chatbot disclosure transparency and harm-response duties
+2026-08-25,WA,HB2225,2026,chatbot,enacted,true,current,FPF_2026_chatbot,Enacted companion-chatbot disclosure child-safety and harm-response duties
+2026-08-25,AR,HB1958,2025,government_AI,enacted,true,current,NCSL_crosscheck,Public-entity AI-use policy creates operative government-use governance duty
+2026-08-25,AZ,HB2175,2025,health_AI,enacted,true,current,NCSL_crosscheck,AI restriction in medical-claim denial maps to health_restriction
+2026-08-25,MD,HB820,2025,health_AI,enacted,true,current,NCSL_crosscheck,Health utilization-review AI safeguards map to health and human-review domains
+2026-08-25,MT,HB178,2025,government_AI,enacted,true,current,NCSL_crosscheck,Government AI limits disclosures and human-review duties map to fixed domains
+2026-08-25,NV,AB325,2025,government_utility_AI,enacted,true,current,NCSL_crosscheck,AI restrictions in emergency and public-utility decisionmaking map to government_use and human_oversight
+2026-08-25,TX,SB815,2025,health_AI,enacted,true,current,NCSL_crosscheck,Automated health-benefit claim safeguards map to health and oversight domains
+2026-08-25,TX,SB1964,2025,government_AI,enacted,true,current,NCSL_crosscheck,Government AI notification impact-assessment and data-management duties map to fixed domains
+2026-08-25,UT,SB180,2025,government_AI,enacted,true,current,NCSL_crosscheck,Law-enforcement generative-AI policy disclaimer and human-review duties map to fixed domains
+2026-08-25,NM,HB178,2025,health_AI_rulemaking,enacted,false,current,NCSL_crosscheck,Delegated nursing-board rulemaking without a directly codable regulated-actor obligation is excluded from confirmatory tables
