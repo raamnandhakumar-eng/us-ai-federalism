@@ -15,7 +15,7 @@ How would alternative federal preemption rules change the population and employm
 - Primary sample: enacted statutes containing an AI-specific obligation, prohibition, right, enforcement power, or exemption.
 - Secondary sample: introduced but unenacted bills. These describe legislative activity only.
 - Exclusions: resolutions without enforceable duties, executive guidance without legal force, municipal rules, generally applicable laws that do not expressly regulate AI, and superseded bill versions.
-- Amendment rule: code the law in force at the freeze date and preserve links to amending acts.
+- Amendment rule: reconstruct the law applicable to each analysis date while preserving links to enacted amending and superseding acts.
 
 The freeze date, database query settings, and unresolved source records must be committed before the full model-assisted coding run.
 
@@ -57,6 +57,27 @@ For substantive domains:
 - 3: prohibition or individual right
 
 Strength describes legal form. It is not a welfare score or an enforcement score. Deadlines do not increase strength. Penalties, public enforcement authority, and private rights are coded separately so enforcement is not double-counted in substantive strength.
+
+### Temporal validity
+
+The source manifest preserves enactment and amendment history rather than assuming that the text of an enacted bill remains current indefinitely. It records, where applicable:
+
+- act-level effective date
+- `inactive_from_date`, the first date the source no longer controls because of repeal, supersession, expiration, or a later enactment
+- the superseding law identifier
+- whether the statute contains mixed section-level operative dates
+
+Human review resolves obligation-level `effective_date` values and may revise an obligation-level `inactive_from_date` when an amendment affects only part of a statute.
+
+For snapshot date \(t\), a positive obligation enters the analysis only when
+
+\[
+effective\_date \leq t < inactive\_from\_date.
+\]
+
+If no verified inactivity date exists, the right side of the interval is open-ended. For statutes marked `mixed_effective_dates=true`, a law-level effective date is never substituted for a missing obligation-level effective date. The analysis fails closed until that date is reviewed.
+
+This temporal representation also preserves superseded obligations for state-by-year legislative panels without allowing them to contaminate a later current-law snapshot.
 
 ### Evidence provenance
 
@@ -114,7 +135,7 @@ Enforcement and scope domains receive separate descriptive tables. They are not 
 2. Claude codes the retrieved passages into a fixed schema.
 3. Every returned row carries a passage ID and contiguous statutory quote; positive rows require both.
 4. A deterministic provenance check verifies that the quote occurs in the cited passage and full source text after whitespace normalization.
-5. A human reviewer checks every retained code against primary legal text.
+5. A human reviewer checks every retained code, amendment relationship, and operative period against primary legal text.
 6. A blinded second reviewer independently codes a stratified 20% sample.
 7. Agreement is reported as raw agreement and Cohen's kappa by domain. Low-prevalence domains also report positive and negative agreement.
 8. Disagreements are resolved before simulations, without showing reviewers the direction of scenario effects.
@@ -125,12 +146,15 @@ Model output is research assistance, not legal advice or ground truth.
 
 The enacted statutory text controls. Legislative summaries, bill digests, findings, press releases, and secondary descriptions may help discover provisions but are not treated as operative evidence when the enacted section is available.
 
+Later enacted amendments and repeals control over an earlier enacted version for dates on which the later law is operative. The source manifest retains both records so changes can be reconstructed rather than overwritten.
+
 For California bill-text pages, the retrieval pipeline excludes the Legislative Counsel's Digest and, when identifiable, an opening findings section before searching the enacted operative body.
 
 ## Sensitivity analysis
 
 - Narrow versus broad definitions of AI-specific law
 - Enactment date versus effective date
+- Alternative dated snapshots for future-effective provisions
 - Binary presence versus ordinal substantive strength
 - Population-weighted versus unweighted results
 - Exclusion of statutes lacking machine-readable primary text
@@ -146,7 +170,8 @@ For California bill-text pages, the retrieval pipeline excludes the Legislative 
 - Do not publish a headline estimate until the source universe is frozen and human review is complete.
 - Report counts of statutes, substantive obligation rows, enforcement/scope rows, states, missing documents, and unresolved amendments.
 - Label all model-only outputs as unverified.
-- Distinguish current law from future-effective obligations.
+- Distinguish current law from future-effective and superseded obligations.
+- Report the exact analysis snapshot date with every current-law table and figure.
 - Do not describe simulated heterogeneity as observed business cost.
 - Keep introduced-bill results out of the confirmatory tables.
 - Do not claim that a domain's ordinal strength measures its social value.
