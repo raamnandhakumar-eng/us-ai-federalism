@@ -12,7 +12,7 @@ from .metrics import prepare_state_domain, scenario_effects, simulate_all
 from .retrieval import render_passages, retrieve_passages
 from .reviews import apply_reviews
 from .schema import LawRecord
-from .settings import PROJECT_ROOT, load_domains, max_spend, model_name
+from .settings import CODING_MAX_OUTPUT_TOKENS, PROJECT_ROOT, load_domains, max_spend, model_name
 from .source_fetch import fetch_source
 from .sources import read_manifest, resolve_text_path, validate_sources
 
@@ -102,7 +102,11 @@ def command_code_laws(args: argparse.Namespace) -> int:
     if not inputs:
         print("No local statute text is ready. Add text files at the manifest paths first.")
         return 1
-    preflight = estimate_cost([item[2] for item in inputs], args.model, output_tokens_each=2200)
+    preflight = estimate_cost(
+        [item[2] for item in inputs],
+        args.model,
+        output_tokens_each=CODING_MAX_OUTPUT_TOKENS,
+    )
     if preflight.usd > args.max_spend:
         raise RuntimeError(
             f"Estimated cost ${preflight.usd:.4f} exceeds the ${args.max_spend:.2f} ceiling"
@@ -191,7 +195,7 @@ def build_parser() -> argparse.ArgumentParser:
     estimate.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
     estimate.add_argument("--model", default=model_name())
     estimate.add_argument("--limit", type=int)
-    estimate.add_argument("--output-tokens", type=int, default=1800)
+    estimate.add_argument("--output-tokens", type=int, default=CODING_MAX_OUTPUT_TOKENS)
     estimate.add_argument("--batch", action="store_true")
     estimate.set_defaults(func=command_estimate_cost)
 

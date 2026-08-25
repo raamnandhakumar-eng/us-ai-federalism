@@ -9,7 +9,13 @@ from typing import Any
 from .costs import estimate_cost
 from .retrieval import normalize_text, render_passages, retrieve_passages
 from .schema import LawCodingResponse, LawRecord
-from .settings import MODEL_PRICING, PROJECT_ROOT, PROMPT_VERSION, load_domains
+from .settings import (
+    CODING_MAX_OUTPUT_TOKENS,
+    MODEL_PRICING,
+    PROJECT_ROOT,
+    PROMPT_VERSION,
+    load_domains,
+)
 
 SYSTEM_PROMPT = """You are assisting a transparent empirical study of U.S. AI statutes.
 Code only what the supplied primary legal text expressly supports. Do not use outside knowledge.
@@ -118,7 +124,11 @@ class ClaudeLawCoder:
             result = LawCodingResponse.model_validate(cached["result"])
             return result, {**cached["usage"], "cache_hit": True, "api_called": False}
 
-        preflight = estimate_cost([SYSTEM_PROMPT + prompt], self.model, output_tokens_each=2200)
+        preflight = estimate_cost(
+            [SYSTEM_PROMPT + prompt],
+            self.model,
+            output_tokens_each=CODING_MAX_OUTPUT_TOKENS,
+        )
         if self.spent_usd + preflight.usd > self.max_spend_usd:
             raise RuntimeError(
                 f"Projected spend ${self.spent_usd + preflight.usd:.4f} exceeds "
@@ -128,7 +138,7 @@ class ClaudeLawCoder:
         client = self._client()
         message = client.messages.parse(
             model=self.model,
-            max_tokens=2200,
+            max_tokens=CODING_MAX_OUTPUT_TOKENS,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
             output_format=LawCodingResponse,

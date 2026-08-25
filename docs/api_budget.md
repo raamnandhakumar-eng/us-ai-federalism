@@ -25,9 +25,9 @@ Official references:
 - Require an explicit per-run ceiling.
 - Cache by statute text, prompt version, schema, and model.
 - Store actual input and output tokens for each request.
+- Use the same pinned response-token ceiling in cost estimates and live requests.
 - Use the synchronous API only for the pilot.
 - Use batch pricing for the frozen main sample.
 - Never spend the reserve automatically.
 
 API spending does not replace human review. The budget buys reproducible first-pass labels, not legal conclusions.
-
