@@ -37,3 +37,23 @@ def load_domains(path: Path | None = None) -> dict[str, list[str]]:
 def load_domain_definitions(path: Path | None = None) -> dict[str, str]:
     payload = _domain_config(path)
     return payload.get("definitions", {})  # type: ignore[return-value]
+
+
+def load_domain_roles(path: Path | None = None) -> dict[str, list[str]]:
+    config_path = path or PROJECT_ROOT / "config" / "domain_roles.json"
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    required = {"substantive", "enforcement", "scope"}
+    missing = required.difference(payload)
+    if missing:
+        raise ValueError(f"Domain role config missing roles: {sorted(missing)}")
+
+    configured = set(load_domains())
+    listed = [domain for role in required for domain in payload[role]]
+    duplicates = sorted({domain for domain in listed if listed.count(domain) > 1})
+    if duplicates:
+        raise ValueError(f"Domains assigned to multiple roles: {duplicates}")
+    unknown = sorted(set(listed).difference(configured))
+    omitted = sorted(configured.difference(listed))
+    if unknown or omitted:
+        raise ValueError(f"Domain-role mismatch; unknown={unknown}, omitted={omitted}")
+    return {role: list(payload[role]) for role in sorted(required)}
