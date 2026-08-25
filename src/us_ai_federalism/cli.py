@@ -12,7 +12,14 @@ from .metrics import prepare_state_domain, scenario_effects, simulate_all
 from .retrieval import render_passages, retrieve_passages
 from .reviews import apply_reviews
 from .schema import LawRecord
-from .settings import CODING_MAX_OUTPUT_TOKENS, PROJECT_ROOT, load_domains, max_spend, model_name
+from .settings import (
+    CODING_MAX_OUTPUT_TOKENS,
+    PROJECT_ROOT,
+    load_domain_roles,
+    load_domains,
+    max_spend,
+    model_name,
+)
 from .source_fetch import fetch_source
 from .sources import read_manifest, resolve_text_path, validate_sources
 
@@ -163,7 +170,12 @@ def command_analyze(args: argparse.Namespace) -> int:
         raise ValueError(
             f"Fill every {args.weight_column} value before using that weighting scheme"
         )
+
     domain_universe = list(load_domains())
+    roles = load_domain_roles()
+    role_lookup = {
+        domain: role for role, domains in roles.items() for domain in domains
+    }
     grid = prepare_state_domain(
         codings,
         states,
@@ -171,18 +183,27 @@ def command_analyze(args: argparse.Namespace) -> int:
         domains=domain_universe,
     )
     floor_strengths = _read_floor_config(args.floor_config)
-    estimates = simulate_all(
+    estimates_all = simulate_all(
         grid,
         floor_strength=args.floor_strength,
         floor_strengths=floor_strengths,
     )
-    effects = scenario_effects(estimates)
+    estimates_all["domain_role"] = estimates_all["domain"].map(role_lookup)
+
+    substantive = estimates_all[estimates_all["domain_role"] == "substantive"].copy()
+    effects = scenario_effects(substantive)
+    effects["domain_role"] = "substantive"
+    legal_structure = estimates_all[estimates_all["domain_role"] != "substantive"].copy()
+
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    estimates.to_csv(output_dir / "scenario_estimates.csv", index=False)
+    substantive.to_csv(output_dir / "scenario_estimates.csv", index=False)
     effects.to_csv(output_dir / "scenario_effects.csv", index=False)
-    plot_coverage(estimates, args.figure)
-    print(f"Wrote estimates to {output_dir}")
+    legal_structure.to_csv(output_dir / "legal_structure_estimates.csv", index=False)
+    estimates_all.to_csv(output_dir / "scenario_estimates_all_domains.csv", index=False)
+    plot_coverage(substantive, args.figure)
+    print(f"Wrote substantive protection estimates to {output_dir / 'scenario_estimates.csv'}")
+    print(f"Wrote enforcement/scope diagnostics to {output_dir / 'legal_structure_estimates.csv'}")
     print(f"Wrote figure to {args.figure}")
     if floor_strengths is not None:
         print(f"Used domain-specific federal floor from {args.floor_config}")
