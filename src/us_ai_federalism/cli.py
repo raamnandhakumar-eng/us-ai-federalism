@@ -14,7 +14,6 @@ from .reviews import apply_reviews
 from .schema import LawRecord
 from .settings import (
     CODING_MAX_OUTPUT_TOKENS,
-    PROJECT_ROOT,
     load_domain_roles,
     load_domains,
     max_spend,
