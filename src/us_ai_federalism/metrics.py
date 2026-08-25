@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 
 import numpy as np
 import pandas as pd
@@ -13,6 +13,7 @@ def prepare_state_domain(
     codings: pd.DataFrame,
     states: pd.DataFrame,
     include_unreviewed: bool = False,
+    domains: Iterable[str] | None = None,
 ) -> pd.DataFrame:
     required = {"state", "domain", "covered", "strength", "review_status"}
     missing = required.difference(codings.columns)
@@ -32,14 +33,23 @@ def prepare_state_domain(
         .map({"true": True, "false": False, "1": True, "0": False})
         .fillna(data["covered"].astype(bool))
     )
-    domains = sorted(codings["domain"].dropna().unique())
-    if not domains:
+
+    domain_values = sorted(set(domains or codings["domain"].dropna().unique()))
+    if not domain_values:
         raise ValueError("No obligation domains found")
 
+    unknown = set(data["domain"].dropna().unique()).difference(domain_values)
+    if unknown:
+        raise ValueError(f"Coding data contains domains outside the fixed universe: {sorted(unknown)}")
+
     grid = pd.MultiIndex.from_product(
-        [states["state"].unique(), domains], names=["state", "domain"]
+        [states["state"].unique(), domain_values], names=["state", "domain"]
     ).to_frame(index=False)
-    collapsed = data[data["covered"]].groupby(["state", "domain"], as_index=False)["strength"].max()
+    collapsed = (
+        data[data["covered"]]
+        .groupby(["state", "domain"], as_index=False)["strength"]
+        .max()
+    )
     grid = grid.merge(collapsed, on=["state", "domain"], how="left")
     grid["strength"] = grid["strength"].fillna(0).astype(int)
     grid = grid.merge(states[["state", "weight"]], on="state", how="left", validate="many_to_one")
@@ -48,14 +58,30 @@ def prepare_state_domain(
     return grid
 
 
+def _validated_floor_map(floor_strengths: Mapping[str, int]) -> dict[str, int]:
+    output: dict[str, int] = {}
+    for domain, strength in floor_strengths.items():
+        value = int(strength)
+        if value not in {0, 1, 2, 3}:
+            raise ValueError(f"Federal floor for {domain!r} must be 0, 1, 2, or 3")
+        output[str(domain)] = value
+    return output
+
+
 def apply_scenario(
     state_domain: pd.DataFrame,
     scenario: str,
     floor_strength: int = 1,
     ceiling_domains: Iterable[str] | None = None,
+    floor_strengths: Mapping[str, int] | None = None,
 ) -> pd.DataFrame:
     frame = state_domain.copy()
-    selected = set(ceiling_domains or frame["domain"].unique())
+    all_domains = set(frame["domain"].unique())
+    selected = set(ceiling_domains or all_domains)
+    unknown_selected = selected.difference(all_domains)
+    if unknown_selected:
+        raise ValueError(f"Scenario selects unknown domains: {sorted(unknown_selected)}")
+
     if scenario == "current":
         pass
     elif scenario == "broad_ceiling":
@@ -64,10 +90,20 @@ def apply_scenario(
         displaced = frame["domain"].isin(selected.difference(CARVEOUT_DOMAINS))
         frame.loc[displaced, "strength"] = 0
     elif scenario == "federal_floor":
-        if floor_strength not in {1, 2, 3}:
-            raise ValueError("floor_strength must be 1, 2, or 3")
-        covered = frame["domain"].isin(selected)
-        frame.loc[covered, "strength"] = np.maximum(frame.loc[covered, "strength"], floor_strength)
+        if floor_strengths is not None:
+            floor_map = _validated_floor_map(floor_strengths)
+            unknown_floor = set(floor_map).difference(all_domains)
+            if unknown_floor:
+                raise ValueError(f"Federal floor contains unknown domains: {sorted(unknown_floor)}")
+            targets = frame["domain"].map(floor_map).fillna(0).astype(int)
+            frame["strength"] = np.maximum(frame["strength"], targets)
+        else:
+            if floor_strength not in {1, 2, 3}:
+                raise ValueError("floor_strength must be 1, 2, or 3")
+            covered = frame["domain"].isin(selected)
+            frame.loc[covered, "strength"] = np.maximum(
+                frame.loc[covered, "strength"], floor_strength
+            )
     else:
         raise ValueError(f"Unknown scenario: {scenario}")
     frame["scenario"] = scenario
@@ -92,6 +128,7 @@ def summarize_scenario(frame: pd.DataFrame) -> pd.DataFrame:
                 "coverage": coverage,
                 "mean_strength": mean_strength,
                 "strength_variance": variance,
+                "binary_heterogeneity": 2 * coverage * (1 - coverage),
                 "states_covered": int((strengths >= 1).sum()),
             }
         )
@@ -102,10 +139,19 @@ def simulate_all(
     state_domain: pd.DataFrame,
     floor_strength: int = 1,
     ceiling_domains: Iterable[str] | None = None,
+    floor_strengths: Mapping[str, int] | None = None,
 ) -> pd.DataFrame:
     scenarios = ["current", "broad_ceiling", "eo14365_carveouts", "federal_floor"]
     outputs = [
-        summarize_scenario(apply_scenario(state_domain, scenario, floor_strength, ceiling_domains))
+        summarize_scenario(
+            apply_scenario(
+                state_domain,
+                scenario,
+                floor_strength=floor_strength,
+                ceiling_domains=ceiling_domains,
+                floor_strengths=floor_strengths,
+            )
+        )
         for scenario in scenarios
     ]
     return pd.concat(outputs, ignore_index=True)
@@ -114,10 +160,11 @@ def simulate_all(
 def scenario_effects(estimates: pd.DataFrame) -> pd.DataFrame:
     current = estimates[estimates["scenario"] == "current"].set_index("domain")
     rows = []
+    measures = ["coverage", "mean_strength", "strength_variance", "binary_heterogeneity"]
     for scenario in sorted(set(estimates["scenario"]) - {"current"}):
         comparison = estimates[estimates["scenario"] == scenario].set_index("domain")
-        joined = current[["coverage", "mean_strength", "strength_variance"]].join(
-            comparison[["coverage", "mean_strength", "strength_variance"]],
+        joined = current[measures].join(
+            comparison[measures],
             lsuffix="_current",
             rsuffix="_scenario",
         )
@@ -127,6 +174,10 @@ def scenario_effects(estimates: pd.DataFrame) -> pd.DataFrame:
         )
         joined["heterogeneity_change"] = (
             joined["strength_variance_scenario"] - joined["strength_variance_current"]
+        )
+        joined["binary_heterogeneity_change"] = (
+            joined["binary_heterogeneity_scenario"]
+            - joined["binary_heterogeneity_current"]
         )
         joined["scenario"] = scenario
         rows.append(joined.reset_index())
