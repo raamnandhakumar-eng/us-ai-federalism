@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Paid model calls are used only after free source and test gates pass. Pilot outputs validate the research pipeline; they are not substantive estimates and cannot enter headline analysis until human review is complete.
+Paid model calls are used only after free source and test gates pass. Pilot outputs validate the research pipeline; they are not substantive estimates and cannot enter headline analysis until independent human review is complete.
 
 ## Pilot 1: three-law pipeline validation
 
@@ -14,102 +14,112 @@ The first paid model-assisted validation run used:
 
 GitHub Actions run `32888343065` completed successfully on 2026-08-25 using the pinned `claude-haiku-4-5-20251001` model.
 
-The preflight cost estimate was **$0.104093**. Actual API spend was **$0.069334**:
+The preflight cost estimate was **$0.104093**. Actual API spend was **$0.069334**. The model returned 44 candidate obligation rows. The deterministic quotation-provenance check verified 41 of 44 rows (**93.2%**).
 
-| Law | Actual API cost |
-|---|---:|
-| CO-2024-SB205 | $0.021040 |
-| TX-2025-HB149 | $0.022656 |
-| CA-2025-SB53 | $0.025638 |
-
-The model returned 44 candidate obligation rows. The deterministic quotation-provenance check verified 41 of 44 rows (**93.2%**). The three failed rows were automatically capped at `confidence=0.25` and flagged for human review.
-
-### What Pilot 1 caught
-
-Colorado SB24-205 could not be treated as the controlling 2026 source by itself. Colorado later delayed its requirements and enacted SB26-189, which repealed and reenacted the relevant provisions with new requirements and mixed operative dates.
-
-The Colorado output from Pilot 1 is therefore retained as a pipeline-validation artifact only. It must not enter a later current-law snapshot as if SB24-205 still controlled.
-
-## Temporal protocol changes after Pilot 1
-
-The repository was changed to:
-
-1. preserve amendment and supersession relationships;
-2. record an `inactive_from_date` when an enacted source ceases to control;
-3. mark laws with mixed section-level operative dates;
-4. require an explicit analysis snapshot date;
-5. require obligation-level dates for positive rows in mixed-date laws;
-6. allow human review to revise operative and inactivity dates; and
-7. fail closed when temporal information is incomplete.
+The run also caught a temporal-design problem: Colorado SB24-205 could not be treated as controlling 2026 law after later delay and repeal/re-enactment legislation. The repository therefore added amendment chains, inactivity dates, mixed-effective-date handling, explicit snapshot dates, and fail-closed temporal validation.
 
 ## Pilot 2: eight-law diverse temporal validation
 
-After the temporal tests passed, a broader validation sample was run across eight controlling enacted sources:
+GitHub Actions run `32893623723` tested eight controlling sources after the temporal protocol changes. All free source and test gates passed before paid calls.
 
-- Colorado SB26-189
-- Texas HB149
-- California SB53
-- Illinois HB3773 / Public Act 103-0804
-- California AB3030
-- Connecticut SB1103 / Public Act 23-16
-- Washington ESHB2225
-- New York S8828
+The conservative preflight estimate was **$0.2656**. Actual API spend was **$0.140119**.
 
-GitHub Actions run `32893623723` completed successfully on 2026-08-25. The workflow first ran lint and tests, fetched and validated all nine source-manifest texts including the historical Colorado source, enforced a **$1.00 hard pilot ceiling**, and only then made the eight model calls.
+| Law | Candidate rows | Exact quote provenance |
+|---|---:|---:|
+| CO-2026-SB189 | 10 | 3/10 |
+| TX-2025-HB149 | 18 | 18/18 |
+| CA-2025-SB53 | 13 | 9/13 |
+| IL-2024-HB3773 | 2 | 2/2 |
+| CA-2024-AB3030 | 3 | 1/3 |
+| CT-2023-SB1103 | 11 | 6/11 |
+| WA-2026-HB2225 | 8 | 4/8 |
+| NY-2026-S8828 | 7 | 0/7 |
+| **Total** | **72** | **43/72 (59.7%)** |
 
-The conservative preflight estimate was **$0.2656**. Actual API spend was **$0.140119**:
+The result showed that exact-quote fidelity was highly source-dependent and that passing quote provenance was not equivalent to correct legal classification.
 
-| Law | Candidate rows | Exact quote provenance | Actual API cost |
-|---|---:|---:|---:|
-| CO-2026-SB189 | 10 | 3/10 | $0.024502 |
-| TX-2025-HB149 | 18 | 18/18 | $0.026511 |
-| CA-2025-SB53 | 13 | 9/13 | $0.021078 |
-| IL-2024-HB3773 | 2 | 2/2 | $0.010316 |
-| CA-2024-AB3030 | 3 | 1/3 | $0.006489 |
-| CT-2023-SB1103 | 11 | 6/11 | $0.018845 |
-| WA-2026-HB2225 | 8 | 4/8 | $0.014163 |
-| NY-2026-S8828 | 7 | 0/7 | $0.018215 |
-| **Total** | **72** | **43/72 (59.7%)** | **$0.140119** |
+## Primary-text adjudication benchmark
 
-All 72 rows remain `unreviewed`. All eight document responses requested human review. The 29 rows that failed exact quote provenance were automatically reduced to `confidence=0.25`; no failed quote is silently treated as validated evidence.
+All 72 Pilot 2 rows were subsequently reviewed against the retrieved primary legal text and recorded in `data/validation/pilot_gold_review.csv`.
 
-The known cumulative Claude spend across Pilots 1 and 2 is **$0.209453**.
+The adjudication produced:
 
-## Source-retrieval incident and resolution
+- **36 verified as classified**;
+- **30 revised**; and
+- **6 rejected**.
 
-Two attempted Pilot 2 runs stopped during free source retrieval before any model request because the Connecticut General Assembly PDF host could not pass certificate-chain verification on GitHub's Python runner. Those failed attempts spent **$0** on the Claude API.
+The benchmark identified recurring ontology errors, including adverse-outcome notice being confused with anti-discrimination, an agency-created reporting portal being confused with a regulated-entity incident-reporting duty, public-records confidentiality being confused with a substantive exemption, and recipient-specific AI disclaimers being confused with synthetic-content regulation.
 
-The repository does not disable TLS verification globally. Instead, Connecticut uses a source-level exception that:
+This benchmark is an **AI-assisted primary-text adjudication**, not independent human validation. Every benchmark row is marked `publication_eligible=False`. It is used to improve and test the coding pipeline, not to support publication-grade legal-accuracy claims.
 
-1. is restricted to the allow-listed official host `cga.ct.gov`;
-2. is attempted only after ordinary verified TLS fails with a certificate-verification error;
-3. requires the expected legal marker `Public Act No. 23-16`;
-4. records `tls_verified=false` in the retrieval receipt; and
-5. now pins the successfully retrieved raw PDF SHA-256:
-   `2bfb035054c6399424eaba95bb7cf3abc3fdfefaa97dcb95eef9d4590a5c586a`.
+## Protocol 0.3.0 changes
 
-Future retrievals through that exception must match the pinned bytes.
+Before a third paid run, the repository:
 
-## What Pilot 2 says about model reliability
+1. cleaned recurring legislative-PDF line numbers and page headers;
+2. dehyphenated words explicitly split across PDF lines;
+3. added regression tests for line-numbered legislative PDFs;
+4. hardened domain definitions using the adjudication errors;
+5. clarified that administrative agency duties are not automatically regulated-entity obligations;
+6. clarified the boundaries among consumer notice, anti-discrimination, health restrictions, synthetic content, enforcement authority, penalties, and exemptions; and
+7. incremented the fixed prompt protocol to `0.3.0`.
 
-The larger pilot exposed a material deterioration in quotation fidelity. Pilot 1 verified 93.2% of candidate evidence quotes automatically; Pilot 2 verified 59.7%. Performance was highly source-dependent: Texas verified 18/18 while New York verified 0/7.
+The full test suite passed before the next paid call.
 
-This does **not** establish a legal-coding accuracy rate. Exact quote provenance tests whether the model copied supporting text faithfully from its cited passage. A row can pass provenance and still be legally misclassified. Conversely, a failed quote may point to a real obligation but cannot be accepted without review.
+## Pilot 3: protocol 0.3.0 benchmark rerun
 
-The result is a reason to improve and review the coding stage before scaling, not a reason to discard the empirical design.
+GitHub Actions run `32897252597` reran the same eight-law validation sample under protocol `0.3.0`.
 
-## Advancement rule after Pilot 2
+The conservative preflight estimate was **$0.2712**. Actual API spend was **$0.141433**. The model returned 79 candidate rows.
 
-Do **not** run the full statutory corpus yet.
+| Law | Candidate rows | Exact quote provenance |
+|---|---:|---:|
+| CO-2026-SB189 | 8 | 5/8 |
+| TX-2025-HB149 | 13 | 13/13 |
+| CA-2025-SB53 | 19 | 15/19 |
+| IL-2024-HB3773 | 2 | 2/2 |
+| CA-2024-AB3030 | 3 | 1/3 |
+| CT-2023-SB1103 | 11 | 5/11 |
+| WA-2026-HB2225 | 7 | 3/7 |
+| NY-2026-S8828 | 16 | 16/16 |
+| **Total** | **79** | **60/79 (75.9%)** |
 
-Before the next paid expansion:
+The most important source-level improvement was New York: exact quote provenance increased from **0/7 to 16/16** after legislative-PDF normalization. Overall provenance increased from **59.7% to 75.9%**.
 
-1. human-review all 72 Pilot 2 candidate rows against primary text;
-2. record accept/revise/reject decisions and obligation-level effective dates;
-3. diagnose the New York, Colorado, Connecticut, Washington, and California quote failures;
-4. tighten the evidence-extraction protocol without weakening exact-match validation;
-5. rerun only a small targeted reliability sample if the protocol changes materially;
-6. require a materially improved provenance rate before scaling; and
-7. freeze the enacted-law universe and denominator sources before the main run.
+The rerun nevertheless showed that classification guardrails do not eliminate all semantic errors. For example, the model could still classify an agency duty to establish a reporting mechanism as `incident_reporting`. Therefore protocol 0.3.0 is suitable for **first-pass corpus coding and provisional analysis only**, not automatic legal ground truth.
 
-No pilot-only row should appear in a headline table or figure before these gates are satisfied.
+## API spend through Pilot 3
+
+Known Claude API spend through the three successful paid pilots is:
+
+- Pilot 1: **$0.069334**
+- Pilot 2: **$0.140119**
+- Pilot 3: **$0.141433**
+- **Cumulative: $0.350886**
+
+The two failed Connecticut-source attempts stopped before model calls and spent **$0**.
+
+## Connecticut source-retrieval exception
+
+The Connecticut General Assembly PDF host cannot pass certificate-chain verification on GitHub's Python runner. The repository does not disable TLS verification globally. Instead, Connecticut uses a source-level exception restricted to `cga.ct.gov`, attempted only after ordinary certificate verification fails, recorded in the source receipt, and protected by the pinned raw PDF SHA-256:
+
+`2bfb035054c6399424eaba95bb7cf3abc3fdfefaa97dcb95eef9d4590a5c586a`
+
+## Advancement decision
+
+Protocol 0.3.0 may now be used for a bounded full-corpus **first-pass** run because:
+
+- source and temporal gates are functioning;
+- the legal universe and confirmatory design are frozen before full results;
+- the quotation pipeline materially improved;
+- known failure modes are documented; and
+- raw outputs remain publication-ineligible.
+
+The full-corpus run must still satisfy all of the following:
+
+1. source retrieval and schema validation before paid calls;
+2. a hard API cost ceiling;
+3. exact-quote provenance checks on every positive row;
+4. explicit unresolved-source missingness;
+5. provisional labeling for assistant-adjudicated estimates; and
+6. independent human review before publication-grade confirmatory claims.
