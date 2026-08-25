@@ -1,2 +1,2 @@
-protocol-v0.3.2 diverse temporal validation pilot
-Run after adding the audited source-level TLS fallback for the Connecticut General Assembly. Validate controlling texts, amendment chains, mixed effective dates, future-effective laws, source integrity, and domain coverage across eight enacted sources.
+protocol-v0.3.0 adjudicated benchmark rerun
+Re-run the fixed eight-law validation sample after legislative PDF normalization and obligation-domain guardrails. Compare quote provenance and classification quality against the committed 72-row primary legal adjudication benchmark before any corpus expansion.
