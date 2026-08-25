@@ -7,7 +7,7 @@
 
 The paper asks how explicit federal preemption designs would change the coverage and interstate
 variation of enforceable protections in enacted U.S. state AI statutes. The contribution is not a
-new bill tracker. It combines four elements:
+new bill tracker and not the first study of AI federalism. It combines four elements:
 
 1. obligation-level coding from controlling legal text;
 2. population and domain-relevant employment denominators;
@@ -21,12 +21,15 @@ The defensible novelty statement is:
 > of enforceable state protections and the cross-state dispersion of those protections.
 
 This sentence must be revised if the continuing search identifies a prior study with the same
-estimand. It must not be shortened to an unqualified claim that no one has studied AI federalism.
+estimand. It must not be shortened to an unqualified claim that no one has studied AI federalism,
+federal preemption of state AI law, or state AI legislation.
 
 ## Closest work and distinction
 
 | Source | What it contributes | Difference from this study |
 |---|---|---|
+| Rubenstein (2025/2026), *Federalism & Algorithms* | Maps the political and doctrinal territory of AI federalism and develops a research agenda for the field | Directly establishes prior work on AI federalism; does not estimate obligation-level, population-weighted protection loss under alternative preemption designs |
+| Mallinson, Robles, Best, and Azevedo (2026), *Publius* | Examines the history of federal and state AI policy and the implications of federal preemption for state policy experimentation | Directly studies AI policy through a federalism and preemption lens; does not construct the proposed statutory-obligation coverage counterfactual |
 | Agrawal et al. (2026), *AI Regulation in U.S. States* | Empirical description of state AI legislation introduced from 2019–2024 | Studies legislative patterns; does not report the proposed obligation-level preemption coverage counterfactual |
 | Dawson et al. (2026), Brookings | Qualitative comparative analysis of conditions associated with passage, failure, and continued activity of 2025 state AI bills | Outcome is legislative passage, not protections displaced or preserved by federal preemption |
 | Fu and Phillips-Robins (2025), Carnegie | Historical and institutional analysis of when Congress preempts state technology regulation | Supplies theory and analogies, not a statute-coded coverage simulation |
@@ -37,20 +40,26 @@ estimand. It must not be shortened to an unqualified claim that no one has studi
 ## Search protocol
 
 The initial search covered ACM Digital Library, SSRN-indexed results, NBER, arXiv, Google-indexed
-scholarship, and policy research from Brookings and Carnegie. Search strings included combinations
-of:
+scholarship, Oxford Academic, and policy research from Brookings and Carnegie. Search strings
+included combinations of:
 
 - `state AI laws federal preemption empirical coverage fragmentation`
 - `quantitative analysis U.S. state AI legislation dataset`
 - `AI federalism empirical state laws coverage`
 - `regulatory fragmentation state AI laws empirical`
 - `state artificial intelligence laws preemption study`
+- `AI federalism preemption state artificial intelligence law`
 
 Forward and backward citation checks should be repeated at the final data freeze. Searches should
 also be recorded in the manuscript appendix with dates, databases, and any newly included sources.
 
 ## References
 
+- Rubenstein, D. S. (2025; revised 2026). “Federalism & Algorithms.” *Arizona Law Review*, Vol. 67,
+  Issue 4. SSRN abstract 5290048. https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5290048
+- Mallinson, D. J., Robles, P., Best, E., and Azevedo, L. (2026). “Artificial Intelligence’s
+  Future Is in the States, if the Federal Government Allows.” *Publius: The Journal of Federalism*,
+  56(3), 733–761. https://doi.org/10.1093/publius/pjag017
 - Agrawal, L., Mulgund, P., DaSouza, R. O., Bhaya, K., and Singh, R. (2026). “AI Regulation in
   U.S. States: Lessons Learned and Key Takeaways.” *Communications of the ACM*, 69(6), 68–77.
   https://doi.org/10.1145/3778178
