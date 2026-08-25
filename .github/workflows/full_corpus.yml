@@ -1,0 +1,96 @@
+name: full corpus
+
+on:
+  push:
+    paths:
+      - "config/full_corpus_trigger.txt"
+      - ".github/workflows/full_corpus.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  full-corpus:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Free test gate
+        run: |
+          ruff check .
+          pytest -q
+      - name: Fetch and validate all primary sources
+        run: |
+          uaf fetch-sources --manifest config/full_source_manifest.csv --receipt-dir data/interim/full_source_receipts
+          uaf validate-sources --manifest config/full_source_manifest.csv
+      - name: Enforce remaining research budget
+        run: |
+          uaf estimate-cost --manifest config/full_source_manifest.csv > /tmp/full_cost.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          estimate = json.loads(Path('/tmp/full_cost.json').read_text())
+          ceiling = 7.40
+          if estimate['usd'] > ceiling:
+              raise SystemExit(f"Estimated cost ${estimate['usd']:.4f} exceeds ${ceiling:.2f} full-run ceiling")
+          print(f"Preflight passed: ${estimate['usd']:.4f} <= ${ceiling:.2f}")
+          PY
+      - name: Code full validated corpus
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "ANTHROPIC_API_KEY is not configured" >&2
+            exit 1
+          fi
+          uaf code-laws \
+            --manifest config/full_source_manifest.csv \
+            --max-spend 7.40 \
+            --output data/processed/full_codings_unreviewed.csv
+      - name: Build deterministic quality report
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import pandas as pd
+
+          path = Path('data/processed/full_codings_unreviewed.csv')
+          df = pd.read_csv(path)
+          verified = df['evidence_verified'].astype(str).str.lower().eq('true')
+          summary = {
+              'rows': int(len(df)),
+              'laws_with_labels': int(df['law_id'].nunique()),
+              'quote_verified_rows': int(verified.sum()),
+              'quote_verified_rate': float(verified.mean()) if len(df) else 0.0,
+              'document_review_flags': int(df['document_needs_human_review'].astype(str).str.lower().eq('true').sum()),
+          }
+          by_law = (
+              df.assign(evidence_verified_bool=verified)
+                .groupby(['law_id','state'], as_index=False)
+                .agg(rows=('coding_id','size'), quote_verified=('evidence_verified_bool','sum'))
+          )
+          by_law['quote_verified_rate'] = by_law['quote_verified'] / by_law['rows']
+          Path('data/processed/full_quality_summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+          by_law.to_csv('data/processed/full_quality_by_law.csv', index=False)
+          print(json.dumps(summary, indent=2))
+          PY
+      - name: Upload full unreviewed corpus
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-corpus-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            /tmp/full_cost.json
+            data/raw/full/*.txt
+            data/interim/full_source_receipts/*.json
+            data/processed/full_codings_unreviewed.csv
+            data/processed/full_codings_unreviewed_usage.csv
+            data/processed/full_quality_summary.json
+            data/processed/full_quality_by_law.csv
