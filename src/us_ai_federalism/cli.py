@@ -23,11 +23,19 @@ from .settings import (
 from .source_fetch import fetch_source
 from .sources import read_manifest, resolve_text_path, validate_sources
 
+OPTIONAL_LAW_FIELDS = {
+    "enactment_date",
+    "effective_date",
+    "amends_law_id",
+    "inactive_from_date",
+    "superseded_by_law_id",
+}
+
 
 def _law_from_row(row: dict[str, str]) -> LawRecord:
-    optional = {"enactment_date", "effective_date", "amends_law_id"}
     cleaned = {
-        key: (None if key in optional and not value else value) for key, value in row.items()
+        key: (None if key in OPTIONAL_LAW_FIELDS and not value else value)
+        for key, value in row.items()
     }
     return LawRecord.model_validate(cleaned)
 
@@ -158,10 +166,30 @@ def _read_floor_config(path: str | Path | None) -> dict[str, int] | None:
     }
 
 
+def _attach_temporal_manifest(codings: pd.DataFrame, manifest: pd.DataFrame) -> pd.DataFrame:
+    if "law_id" not in codings.columns:
+        raise ValueError("Coding data requires law_id for temporal analysis")
+    missing_laws = sorted(set(codings["law_id"]) - set(manifest["law_id"]))
+    if missing_laws:
+        raise ValueError(f"Coding data contains law_id values absent from manifest: {missing_laws}")
+
+    temporal = manifest[
+        ["law_id", "effective_date", "inactive_from_date", "mixed_effective_dates"]
+    ].rename(
+        columns={
+            "effective_date": "law_effective_date",
+            "inactive_from_date": "law_inactive_from_date",
+        }
+    )
+    return codings.merge(temporal, on="law_id", how="left", validate="many_to_one")
+
+
 def command_analyze(args: argparse.Namespace) -> int:
     from .plotting import plot_coverage
 
     codings = pd.read_csv(args.codings)
+    manifest = read_manifest(args.manifest)
+    codings = _attach_temporal_manifest(codings, manifest)
     states = pd.read_csv(args.states)
     if args.weight_column not in states.columns:
         raise ValueError(f"State universe has no {args.weight_column!r} column")
@@ -173,14 +201,13 @@ def command_analyze(args: argparse.Namespace) -> int:
 
     domain_universe = list(load_domains())
     roles = load_domain_roles()
-    role_lookup = {
-        domain: role for role, domains in roles.items() for domain in domains
-    }
+    role_lookup = {domain: role for role, domains in roles.items() for domain in domains}
     grid = prepare_state_domain(
         codings,
         states,
         args.include_unreviewed,
         domains=domain_universe,
+        analysis_date=args.analysis_date,
     )
     floor_strengths = _read_floor_config(args.floor_config)
     estimates_all = simulate_all(
@@ -202,6 +229,7 @@ def command_analyze(args: argparse.Namespace) -> int:
     legal_structure.to_csv(output_dir / "legal_structure_estimates.csv", index=False)
     estimates_all.to_csv(output_dir / "scenario_estimates_all_domains.csv", index=False)
     plot_coverage(substantive, args.figure)
+    print(f"Analysis snapshot: {args.analysis_date}")
     print(f"Wrote substantive protection estimates to {output_dir / 'scenario_estimates.csv'}")
     print(f"Wrote enforcement/scope diagnostics to {output_dir / 'legal_structure_estimates.csv'}")
     print(f"Wrote figure to {args.figure}")
@@ -274,7 +302,9 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument(
         "--codings", default=PROJECT_ROOT / "data" / "processed" / "codings_reviewed.csv"
     )
+    analyze.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
     analyze.add_argument("--states", default=PROJECT_ROOT / "config" / "state_universe.csv")
+    analyze.add_argument("--analysis-date", required=True, help="Snapshot date in YYYY-MM-DD format")
     analyze.add_argument("--weight-column", default="weight")
     analyze.add_argument("--floor-strength", type=int, default=1)
     analyze.add_argument(
