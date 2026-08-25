@@ -1,11 +1,12 @@
 {
-  "prompt_version": "0.2.0",
+  "prompt_version": "0.2.1",
   "domains": {
     "impact_assessment": ["impact assessment", "algorithmic impact", "risk assessment"],
     "risk_management": ["risk management", "risk management policy", "mitigation", "risk framework"],
     "model_evaluation": ["model evaluation", "evaluate", "evaluation", "testing", "red team", "performance assessment"],
     "human_oversight": ["human review", "human oversight", "human intervention", "review by a person"],
     "consumer_notice": ["notify the consumer", "notice to the consumer", "disclose to each consumer", "interacting with an artificial intelligence"],
+    "developer_documentation": ["make available to the deployer", "documentation describing", "documentation and information", "model card", "dataset card"],
     "public_transparency": ["publicly available", "publish on its internet website", "transparency report", "public statement"],
     "explanation_appeal": ["explanation", "appeal", "contest", "correct any incorrect", "review the decision"],
     "antidiscrimination": ["algorithmic discrimination", "discriminate", "protected class", "unlawful differential treatment"],
@@ -24,16 +25,17 @@
     "exemption": ["exempt", "does not apply", "excluded", "safe harbor", "small business"]
   },
   "definitions": {
-    "impact_assessment": "A mandatory formal impact or risk assessment of an AI system or deployment. Exclude general reasonable-care duties, ordinary testing, and standing risk-management programs unless the statute separately requires an assessment.",
-    "risk_management": "A mandatory policy, program, framework, governance process, or mitigation process for identifying and managing AI risk. Exclude one-off impact assessments and bare prohibitions.",
-    "model_evaluation": "A mandatory technical test, evaluation, red-team exercise, capability assessment, performance assessment, or similar evaluation of an AI model/system. Exclude production of records to an investigator and general policy review.",
-    "human_oversight": "A duty or individual right requiring a human person to review, intervene in, supervise, or make a decision. Exclude internal governance, generic safety controls, and prohibitions on harmful AI behavior that do not require human review.",
-    "consumer_notice": "A direct notice or disclosure to a specific consumer, user, patient, worker, or person interacting with or affected by AI. Exclude general website postings and public reports.",
-    "public_transparency": "A mandatory public website posting, public report, public framework, or public disclosure available generally rather than delivered to a specific affected person.",
+    "impact_assessment": "A mandatory formal impact or risk assessment that a regulated actor must conduct for an AI system or deployment. Exclude general reasonable-care duties, standing risk-management programs, ordinary testing, and a developer's duty merely to provide documents so another actor can complete an assessment.",
+    "risk_management": "A mandatory policy, program, framework, governance process, or mitigation process that the regulated actor must implement to identify and manage AI risk. Exclude one-off impact assessments, bare prohibitions, and duties only to describe or transmit risk-management information.",
+    "model_evaluation": "A mandatory technical test, evaluation, red-team exercise, capability assessment, or performance assessment that the regulated actor must conduct. Documentation describing how a system was evaluated is developer_documentation unless the provision independently commands an evaluation.",
+    "human_oversight": "A duty or individual right requiring a human person to review, intervene in, supervise, or make a decision. Exclude internal governance, generic safety controls, documentation explaining how a system should be monitored, and harmful-use prohibitions with no human reviewer.",
+    "consumer_notice": "A direct notice or disclosure to a specific consumer, user, patient, worker, or person interacting with or affected by AI. Exclude public website reports and business-to-business technical documentation supplied to a developer or deployer.",
+    "developer_documentation": "A mandatory business-to-business duty to create, retain, or supply model cards, dataset cards, technical documentation, system-use instructions, evaluation documentation, impact-assessment support, or similar information to a developer, deployer, customer organization, or regulator. Exclude direct consumer notice and generally available public transparency reports.",
+    "public_transparency": "A mandatory public website posting, public report, public framework, or public disclosure available generally rather than delivered to a specific affected person or downstream business.",
     "explanation_appeal": "An individual right or corresponding duty involving reasons, explanation, correction, appeal, contest, reconsideration, or review of an AI-influenced decision.",
     "antidiscrimination": "A prohibition, reasonable-care duty, mitigation duty, or other enforceable requirement aimed at unlawful discrimination or discriminatory AI outcomes.",
-    "incident_reporting": "A duty on a regulated developer, deployer, employer, provider, or other covered entity to report a qualifying AI incident, harm, safety event, or discriminatory outcome to a regulator or affected party. Exclude consumer complaint channels and regulator reporting duties about its own enforcement work.",
-    "frontier_safety": "A substantive safety, risk, mitigation, evaluation, or incident-management duty specific to frontier/foundation models or catastrophic risk. Do not use this domain for every transparency duty merely because the law concerns frontier AI.",
+    "incident_reporting": "A mandatory duty on a regulated developer, deployer, employer, provider, or other covered entity to report a qualifying AI incident, harm, safety event, or discriminatory outcome to a regulator or affected party. Exclude consumer complaint channels, a regulator's duty merely to establish a reporting mechanism, and regulator reports about its own enforcement work.",
+    "frontier_safety": "A substantive safety, risk, mitigation, evaluation, or incident-management duty specific to frontier/foundation models or catastrophic risk. Do not use this domain for every transparency or reporting duty merely because the law concerns frontier AI.",
     "harmful_use_restriction": "A substantive prohibition on developing, deploying, or using AI to cause or facilitate physical harm, self-harm, criminal conduct, coercion, or similarly harmful conduct. Use child_safety instead when the rule is specifically limited to minors. Do not code a harmful-use prohibition as human oversight unless the law separately requires a human reviewer.",
     "child_safety": "An AI-specific prohibition, design duty, disclosure, safeguard, or right intended specifically to protect minors or children.",
     "health_restriction": "An AI-specific restriction, review duty, disclosure, or safeguard governing health care, clinical decisions, insurance medical necessity, therapy, or similar health uses.",
@@ -42,14 +44,14 @@
     "infrastructure": "An AI-specific rule governing compute, data centers, power, grid effects, siting, or permitting.",
     "government_use": "A substantive restriction or duty governing a government entity's procurement, deployment, or use of AI. Exclude an agency's administrative, study, enforcement, or reporting responsibilities unless they directly constrain government AI use.",
     "enforcement_authority": "Express statutory authority for a regulator or public official to investigate, enforce, seek injunctions, issue orders, or otherwise compel compliance.",
-    "private_right": "An express private civil cause of action or right to sue. A complaint process or regulator petition is not a private right of action.",
+    "private_right": "An express private civil cause of action or right to sue. A complaint process or regulator petition is not a private right of action. If the statute expressly states that no private right exists, a negative row with covered=false and strength=0 may be retained as an explicit enforcement-structure fact.",
     "penalty": "An express civil, administrative, or criminal monetary or nonmonetary penalty for violation of an AI-specific duty.",
-    "exemption": "An express exemption, safe harbor, sector carve-out, small-entity exception, or other provision removing or reducing application of an AI-specific duty."
+    "exemption": "An express exemption, safe harbor, sector carve-out, small-entity exception, or other provision removing or reducing application of an AI-specific obligation. Exclude public-records confidentiality exemptions and other exemptions from unrelated background statutes that do not reduce the AI law's coverage."
   },
   "strength_labels": {
     "0": "absent",
-    "1": "disclosure_or_procedure",
-    "2": "assessment_mitigation_or_review",
-    "3": "prohibition_right_or_penalized_mandate"
+    "1": "disclosure_reporting_documentation_or_procedure",
+    "2": "assessment_risk_management_mitigation_evaluation_or_human_review",
+    "3": "prohibition_or_individual_right"
   }
 }
