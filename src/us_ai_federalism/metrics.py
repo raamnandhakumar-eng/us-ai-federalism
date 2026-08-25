@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from datetime import date
 
 import numpy as np
 import pandas as pd
@@ -9,11 +10,82 @@ CARVEOUT_DOMAINS = {"child_safety", "infrastructure", "government_use"}
 REVIEWED_STATUSES = {"verified", "revised"}
 
 
+def _text_series(frame: pd.DataFrame, column: str) -> pd.Series:
+    if column not in frame.columns:
+        return pd.Series("", index=frame.index, dtype="string")
+    return frame[column].fillna("").astype(str).str.strip()
+
+
+def _boolean_series(frame: pd.DataFrame, column: str) -> pd.Series:
+    raw = _text_series(frame, column).str.lower()
+    if raw.eq("").all():
+        return pd.Series(False, index=frame.index, dtype=bool)
+    mapped = raw.map({"true": True, "false": False, "1": True, "0": False, "": False})
+    invalid = mapped.isna()
+    if invalid.any():
+        values = sorted(raw.loc[invalid].unique())
+        raise ValueError(f"{column} contains invalid boolean values: {values}")
+    return mapped.astype(bool)
+
+
+def _iso_dates(raw: pd.Series, label: str) -> pd.Series:
+    present = raw.ne("")
+    parsed = pd.to_datetime(raw.where(present), format="%Y-%m-%d", errors="coerce")
+    invalid = present & parsed.isna()
+    if invalid.any():
+        values = sorted(raw.loc[invalid].unique())
+        raise ValueError(f"{label} must use ISO YYYY-MM-DD dates: {values}")
+    return parsed
+
+
+def _filter_snapshot(
+    data: pd.DataFrame,
+    analysis_date: str | date | None,
+) -> pd.DataFrame:
+    if analysis_date is None:
+        return data
+
+    try:
+        snapshot = pd.Timestamp(analysis_date).normalize()
+    except (TypeError, ValueError) as exc:
+        raise ValueError("analysis_date must be a valid date") from exc
+
+    row_start = _text_series(data, "effective_date")
+    law_start = _text_series(data, "law_effective_date")
+    start_raw = row_start.mask(row_start.eq(""), law_start)
+
+    mixed_dates = _boolean_series(data, "mixed_effective_dates")
+    positive = data["covered"].astype(bool)
+    missing_mixed = positive & mixed_dates & row_start.eq("")
+    if missing_mixed.any():
+        laws = sorted(_text_series(data.loc[missing_mixed], "law_id").unique())
+        raise ValueError(
+            "Mixed-effective-date laws require an obligation-level effective_date before analysis: "
+            f"{laws}"
+        )
+
+    missing_start = positive & start_raw.eq("")
+    if missing_start.any():
+        laws = sorted(_text_series(data.loc[missing_start], "law_id").unique())
+        raise ValueError(f"Positive obligations are missing an operative start date: {laws}")
+
+    start_dates = _iso_dates(start_raw, "effective_date")
+
+    row_end = _text_series(data, "inactive_from_date")
+    law_end = _text_series(data, "law_inactive_from_date")
+    end_raw = row_end.mask(row_end.eq(""), law_end)
+    end_dates = _iso_dates(end_raw, "inactive_from_date")
+
+    active = start_dates.le(snapshot) & (end_dates.isna() | snapshot.lt(end_dates))
+    return data.loc[~positive | active].copy()
+
+
 def prepare_state_domain(
     codings: pd.DataFrame,
     states: pd.DataFrame,
     include_unreviewed: bool = False,
     domains: Iterable[str] | None = None,
+    analysis_date: str | date | None = None,
 ) -> pd.DataFrame:
     required = {"state", "domain", "covered", "strength", "review_status"}
     missing = required.difference(codings.columns)
@@ -33,6 +105,7 @@ def prepare_state_domain(
         .map({"true": True, "false": False, "1": True, "0": False})
         .fillna(data["covered"].astype(bool))
     )
+    data = _filter_snapshot(data, analysis_date)
 
     domain_values = sorted(set(domains or codings["domain"].dropna().unique()))
     if not domain_values:
