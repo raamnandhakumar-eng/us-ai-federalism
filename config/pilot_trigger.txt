@@ -1,2 +1,2 @@
-protocol-v0.2.1 validation pilot
-Validate operative-text filtering, developer documentation, explicit negative enforcement evidence, and refined strength coding.
+protocol-v0.3 diverse temporal validation pilot
+Validate current controlling texts, amendment chains, mixed effective dates, future-effective laws, and domain coverage across eight enacted sources.
