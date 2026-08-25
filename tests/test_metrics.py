@@ -98,3 +98,104 @@ def test_binary_heterogeneity_is_zero_at_full_coverage() -> None:
     estimates = simulate_all(prepare_state_domain(codings, states), floor_strength=1)
     floor = estimates.query("scenario == 'federal_floor'")
     assert (floor["binary_heterogeneity"] == 0).all()
+
+
+def test_snapshot_excludes_future_and_inactive_obligations() -> None:
+    codings = pd.DataFrame(
+        [
+            {
+                "law_id": "AA-future",
+                "state": "AA",
+                "domain": "consumer_notice",
+                "covered": True,
+                "strength": 1,
+                "review_status": "verified",
+                "effective_date": "2027-01-01",
+                "law_effective_date": "2026-05-14",
+                "inactive_from_date": "",
+                "law_inactive_from_date": "",
+                "mixed_effective_dates": True,
+            },
+            {
+                "law_id": "AA-expired",
+                "state": "AA",
+                "domain": "child_safety",
+                "covered": True,
+                "strength": 3,
+                "review_status": "verified",
+                "effective_date": "2026-01-01",
+                "law_effective_date": "2026-01-01",
+                "inactive_from_date": "",
+                "law_inactive_from_date": "2026-07-01",
+                "mixed_effective_dates": False,
+            },
+            {
+                "law_id": "AA-active",
+                "state": "AA",
+                "domain": "model_evaluation",
+                "covered": True,
+                "strength": 2,
+                "review_status": "verified",
+                "effective_date": "2026-01-01",
+                "law_effective_date": "2026-01-01",
+                "inactive_from_date": "",
+                "law_inactive_from_date": "",
+                "mixed_effective_dates": False,
+            },
+        ]
+    )
+    states = pd.DataFrame([{"state": "AA", "weight": 1}])
+    domains = ["consumer_notice", "child_safety", "model_evaluation"]
+    grid = prepare_state_domain(
+        codings,
+        states,
+        domains=domains,
+        analysis_date="2026-08-25",
+    )
+    assert grid.query("domain == 'consumer_notice'")["strength"].item() == 0
+    assert grid.query("domain == 'child_safety'")["strength"].item() == 0
+    assert grid.query("domain == 'model_evaluation'")["strength"].item() == 2
+
+
+def test_mixed_effective_date_law_requires_row_date() -> None:
+    codings = pd.DataFrame(
+        [
+            {
+                "law_id": "AA-mixed",
+                "state": "AA",
+                "domain": "consumer_notice",
+                "covered": True,
+                "strength": 1,
+                "review_status": "verified",
+                "effective_date": "",
+                "law_effective_date": "2026-05-14",
+                "law_inactive_from_date": "",
+                "mixed_effective_dates": True,
+            }
+        ]
+    )
+    states = pd.DataFrame([{"state": "AA", "weight": 1}])
+    with pytest.raises(ValueError, match="obligation-level effective_date"):
+        prepare_state_domain(codings, states, analysis_date="2026-08-25")
+
+
+def test_single_effective_date_law_uses_manifest_fallback() -> None:
+    codings = pd.DataFrame(
+        [
+            {
+                "law_id": "AA-simple",
+                "state": "AA",
+                "domain": "consumer_notice",
+                "covered": True,
+                "strength": 1,
+                "review_status": "verified",
+                "effective_date": "",
+                "law_effective_date": "2026-01-01",
+                "law_inactive_from_date": "",
+                "mixed_effective_dates": False,
+            }
+        ]
+    )
+    states = pd.DataFrame([{"state": "AA", "weight": 1}])
+    grid = prepare_state_domain(codings, states, analysis_date="2026-08-25")
+    assert grid.query("domain == 'consumer_notice'")["strength"].item() == 1
