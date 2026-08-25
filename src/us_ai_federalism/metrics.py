@@ -76,7 +76,7 @@ def _filter_snapshot(
     end_raw = row_end.mask(row_end.eq(""), law_end)
     end_dates = _iso_dates(end_raw, "inactive_from_date")
 
-    active = start_dates.le(snapshot) & (end_dates.isna() | snapshot.lt(end_dates))
+    active = start_dates.le(snapshot) & (end_dates.isna() | end_dates.gt(snapshot))
     return data.loc[~positive | active].copy()
 
 
