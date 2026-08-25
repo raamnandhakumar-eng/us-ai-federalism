@@ -1,0 +1,73 @@
+coding_id,law_id,review_status,final_domain,final_strength,final_effective_date,reviewer_type,publication_eligible,review_note
+7d73bc2ea14d0cf2dadc,CO-2026-SB189,revised,developer_documentation,1,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+6fff59971b6ea04b2b5e,CO-2026-SB189,verified,developer_documentation,1,2027-01-01,AI_assistant,False,Classification supported by primary text.
+86aaf17daa86026a29a6,CO-2026-SB189,revised,developer_documentation,1,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+3a1ed426631cd0bc4411,CO-2026-SB189,revised,developer_documentation,1,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+d3e91b1a4fe40123d498,CO-2026-SB189,revised,consumer_notice,1,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+bab57097b84b0da23473,CO-2026-SB189,verified,consumer_notice,1,2027-01-01,AI_assistant,False,Classification supported by primary text.
+10086695ba071e1e9182,CO-2026-SB189,revised,explanation_appeal,3,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+48ecb8a086dd42fd5ffd,CO-2026-SB189,revised,human_oversight,2,2027-01-01,AI_assistant,False,Replace incorrect notice evidence with the actual human-review right in section 6-1-1705(1)(a)(II).
+56af7e67e43aa9a30172,CO-2026-SB189,rejected,antidiscrimination,2,2027-01-01,AI_assistant,False,Adverse-outcome disclosure is not an anti-discrimination obligation.
+f01fbbac98d1e591a9f9,CO-2026-SB189,rejected,risk_management,2,2027-01-01,AI_assistant,False,Quoted text is documentation about known risks and use instructions; duplicates the developer-documentation duty.
+6ef70efa3de7079f0e9e,TX-2025-HB149,verified,consumer_notice,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+febdb0176e38280333e5,TX-2025-HB149,verified,health_restriction,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+c785475487b280909c45,TX-2025-HB149,verified,harmful_use_restriction,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+433cf7cc203efa7e87aa,TX-2025-HB149,verified,government_use,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+73b29865060155dd11e3,TX-2025-HB149,verified,government_use,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+846b40d9687588e3bd13,TX-2025-HB149,verified,antidiscrimination,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+833b76f6e8c36e8f6a71,TX-2025-HB149,verified,child_safety,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+423e1eb2c980e9aab875,TX-2025-HB149,verified,harmful_use_restriction,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+6794e380411b640968f8,TX-2025-HB149,verified,enforcement_authority,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+1e4006118aea5a2df16f,TX-2025-HB149,verified,private_right,0,2026-01-01,AI_assistant,False,Classification supported by primary text.
+9a8d00a1a0dae6f7712a,TX-2025-HB149,verified,penalty,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+c4238b95cbdf9bb90f4a,TX-2025-HB149,revised,enforcement_authority,1,2026-01-01,AI_assistant,False,"Civil investigative demand authority is enforcement structure, not developer documentation."
+14dfeb9d4468a87a06d7,TX-2025-HB149,verified,harmful_use_restriction,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+5dbb8ab0e21fdce870b0,TX-2025-HB149,verified,exemption,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+fa988030a0a87307b189,TX-2025-HB149,verified,exemption,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+328c17b324aa35d2c547,TX-2025-HB149,verified,exemption,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+6c059f0e2cdbf8894393,TX-2025-HB149,verified,exemption,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+c67900d4545888d84c03,TX-2025-HB149,verified,exemption,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+7a13242eb2ce156cf93d,CA-2025-SB53,revised,risk_management,2,2026-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+5903cbc4a076a9044060,CA-2025-SB53,verified,frontier_safety,2,2026-01-01,AI_assistant,False,Classification supported by primary text.
+654c7ce013c9fe6e8266,CA-2025-SB53,verified,public_transparency,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+4e0d62c8f83ac359d99f,CA-2025-SB53,revised,public_transparency,1,2026-01-01,AI_assistant,False,Duty is to include assessment summaries in the public transparency report.
+f1347ab795dc7c2fd43d,CA-2025-SB53,revised,frontier_safety,1,2026-01-01,AI_assistant,False,"Quarterly transmission concerns catastrophic-risk assessments, not a critical safety incident."
+0f7ee2abb140f86a6423,CA-2025-SB53,verified,frontier_safety,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+9ae16652896b7a8e2552,CA-2025-SB53,verified,frontier_safety,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+271e02923fabe9182afa,CA-2025-SB53,revised,exemption,1,2026-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+7701512e7eb1a175571b,CA-2025-SB53,rejected,incident_reporting,1,2026-01-01,AI_assistant,False,Agency duty to establish a reporting mechanism is administrative and excluded from incident_reporting.
+383e1c6d06bc87013a12,CA-2025-SB53,verified,incident_reporting,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+3bf679f35325545d0847,CA-2025-SB53,verified,incident_reporting,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+c0931d13ed9c8f3efbd0,CA-2025-SB53,rejected,exemption,1,2026-01-01,AI_assistant,False,Public-records confidentiality is excluded from the exemption domain by the fixed codebook.
+0eccd6c4d4767bc8a8df,CA-2025-SB53,revised,exemption,1,2026-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+d97a7e59a4bf29008e06,IL-2024-HB3773,verified,antidiscrimination,3,2026-01-01,AI_assistant,False,Classification supported by primary text.
+66eb189f852da9fa1cd6,IL-2024-HB3773,verified,consumer_notice,1,2026-01-01,AI_assistant,False,Classification supported by primary text.
+3be0c59a01d8bc56573b,CA-2024-AB3030,revised,consumer_notice,1,2025-01-01,AI_assistant,False,"Patient-facing AI-generation disclaimer is consumer notice, not synthetic-content provenance regulation."
+8c38bd9afe18a054ab59,CA-2024-AB3030,revised,consumer_notice,1,2025-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+e74f2b3986cd9c8d3dde,CA-2024-AB3030,revised,exemption,1,2025-01-01,AI_assistant,False,Human-provider review removes the subdivision (a) disclosure duties; this is a statutory exemption.
+5e2b0a08e32f4e4fe12c,CT-2023-SB1103,verified,public_transparency,1,2023-07-01,AI_assistant,False,Classification supported by primary text.
+35fb2d563396fa42eb5c,CT-2023-SB1103,rejected,impact_assessment,2,2023-07-01,AI_assistant,False,Inventory metadata mentions impact assessments but does not independently require the agency to conduct one.
+003070d0744152460403,CT-2023-SB1103,revised,risk_management,2,2024-02-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+ca5397a68928c2bb13e8,CT-2023-SB1103,verified,impact_assessment,2,2024-02-01,AI_assistant,False,Classification supported by primary text.
+703d2812e88d2c2cd6a0,CT-2023-SB1103,verified,government_use,3,2024-02-01,AI_assistant,False,Classification supported by primary text.
+c2229f3b0331c712a841,CT-2023-SB1103,verified,public_transparency,1,2024-02-01,AI_assistant,False,Classification supported by primary text.
+dc3d9a6cbdffb3d78e31,CT-2023-SB1103,verified,public_transparency,1,2023-07-01,AI_assistant,False,Classification supported by primary text.
+427cb7d2da0fecaa75f9,CT-2023-SB1103,revised,impact_assessment,2,2024-02-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+3149fc2810a4abf91eff,CT-2023-SB1103,revised,government_use,3,2024-02-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+aad1e1748e523ef99fa6,CT-2023-SB1103,revised,risk_management,2,2024-02-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+63a7bd38cafc9adbdfad,CT-2023-SB1103,verified,public_transparency,1,2024-02-01,AI_assistant,False,Classification supported by primary text.
+6e1e02b6f13daaadbaaa,WA-2026-HB2225,revised,consumer_notice,1,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+86d563a26f2fb7b87df6,WA-2026-HB2225,verified,child_safety,2,2027-01-01,AI_assistant,False,Classification supported by primary text.
+4e3c4feb4a000e8197c9,WA-2026-HB2225,verified,child_safety,2,2027-01-01,AI_assistant,False,Classification supported by primary text.
+65a4b7c37917e2fe2a36,WA-2026-HB2225,revised,consumer_notice,1,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+c651f52c34d5ee8e1ea5,WA-2026-HB2225,revised,risk_management,2,2027-01-01,AI_assistant,False,"Self-harm detection and response protocol applies to users generally, not only minors."
+ef4aca97b1ae05d2ce74,WA-2026-HB2225,revised,public_transparency,1,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+7adc0f2cac368e3ff2e1,WA-2026-HB2225,verified,harmful_use_restriction,3,2027-01-01,AI_assistant,False,Classification supported by primary text.
+5b0e73d0c48f2e8c6d2a,WA-2026-HB2225,revised,enforcement_authority,1,2027-01-01,AI_assistant,False,Section incorporates Consumer Protection Act enforcement rather than stating a standalone penalty amount.
+7e6f9016be1fbbb1d59f,NY-2026-S8828,revised,risk_management,2,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+47390b384b3b2c8d0836,NY-2026-S8828,revised,model_evaluation,2,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+5d001848d910dd17887e,NY-2026-S8828,revised,public_transparency,1,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+508168febe7598b260db,NY-2026-S8828,revised,public_transparency,1,2027-01-01,AI_assistant,False,Classification retained; evidence quotation repaired against primary text.
+49f07b3c44495b079239,NY-2026-S8828,revised,frontier_safety,3,2027-01-01,AI_assistant,False,"False or misleading catastrophic-risk statement prohibition is frontier safety, not anti-discrimination."
+9bf6ba154fa92e7f1f1e,NY-2026-S8828,revised,frontier_safety,1,2027-01-01,AI_assistant,False,"Quarterly transmission concerns catastrophic-risk assessments, not incident reporting."
+a9b3d6230ecd9b557daa,NY-2026-S8828,rejected,incident_reporting,1,2027-01-01,AI_assistant,False,Agency duty to establish a reporting mechanism is administrative and excluded from incident_reporting.
