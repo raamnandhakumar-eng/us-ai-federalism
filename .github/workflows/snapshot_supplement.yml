@@ -26,7 +26,12 @@ jobs:
           pytest -q
       - name: Fetch supplement primary sources
         run: |
-          uaf fetch-sources --manifest config/snapshot_supplement_manifest.csv --receipt-dir data/interim/supplement_source_receipts
+          # The Arizona and Utah supplemental acts are short official enactments,
+          # so this narrow workflow uses a lower source-length floor than the main corpus.
+          uaf fetch-sources \
+            --manifest config/snapshot_supplement_manifest.csv \
+            --receipt-dir data/interim/supplement_source_receipts \
+            --minimum-characters 1500
           uaf validate-sources --manifest config/snapshot_supplement_manifest.csv
       - name: Enforce supplement budget
         run: |
