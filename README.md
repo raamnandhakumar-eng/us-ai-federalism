@@ -6,6 +6,11 @@ An empirical U.S. AI federalism project measuring which public protections would
 
 > **Research status:** pre-analysis design stage. The repository contains a preregistration-ready protocol, source manifest, validation rules, simulation code, and synthetic tests. It does **not** yet report findings from the completed statutory universe.
 
+**Original contribution:** an obligation-level estimate of how federal AI ceilings, carve-outs, and
+floors would change population-weighted protection coverage and cross-state regulatory
+heterogeneity. The qualified novelty claim and closest related studies are documented in the
+[literature and novelty audit](docs/literature_review.md).
+
 ## Question
 
 Would federal preemption reduce regulatory fragmentation without removing important state-level protections?
@@ -58,21 +63,24 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 
-# 1. Validate the source manifest and local statute texts
+# 1. Download primary legal text and record content hashes
+uaf fetch-sources --manifest config/source_manifest.csv
+
+# 2. Validate the source manifest and local statute texts
 uaf validate-sources --manifest config/source_manifest.csv
 
-# 2. Estimate API cost before making any call
+# 3. Estimate API cost before making any call
 uaf estimate-cost --manifest config/source_manifest.csv
 
-# 3. Run a small synchronous pilot
+# 4. Run a small synchronous pilot
 export ANTHROPIC_API_KEY="your-key-here"
 uaf code-laws --manifest config/source_manifest.csv --limit 10 --max-spend 1.00
 
-# 4. Review model labels, apply adjudications, then build estimates
+# 5. Review model labels, apply adjudications, then build estimates
 uaf apply-reviews
 uaf analyze --codings data/processed/codings_reviewed.csv
 
-# 5. Run tests
+# 6. Run tests
 pytest
 ```
 
@@ -94,6 +102,7 @@ The API runner defaults to Claude Haiku 4.5, hashes every request, reuses cached
 config/                 policy domains, sources, and scenario parameters
 data/                   raw-text instructions and generated outputs
 docs/                   research design, codebook, and policy scenarios
+paper/                  pre-analysis manuscript and result placeholders
 src/us_ai_federalism/   ingestion, coding, validation, metrics, and figures
 tests/                  synthetic unit and integration tests
 tools/                  reproducible command-line helpers

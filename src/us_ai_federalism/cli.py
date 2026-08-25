@@ -13,6 +13,7 @@ from .retrieval import render_passages, retrieve_passages
 from .reviews import apply_reviews
 from .schema import LawRecord
 from .settings import PROJECT_ROOT, load_domains, max_spend, model_name
+from .source_fetch import fetch_source
 from .sources import read_manifest, resolve_text_path, validate_sources
 
 
@@ -31,6 +32,34 @@ def command_validate_sources(args: argparse.Namespace) -> int:
     missing = int((~report["text_exists"]).sum())
     print(f"\n{len(report)} manifest records; {missing} source texts missing")
     return 1 if missing else 0
+
+
+def command_fetch_sources(args: argparse.Namespace) -> int:
+    manifest = read_manifest(args.manifest)
+    rows = manifest.head(args.limit) if args.limit else manifest
+    receipt_dir = Path(args.receipt_dir)
+    failures: list[str] = []
+    for row in rows.to_dict(orient="records"):
+        output = resolve_text_path(row["local_text_path"])
+        receipt = receipt_dir / f"{row['law_id']}.json"
+        try:
+            result = fetch_source(
+                law_id=row["law_id"],
+                url=row["primary_source_url"],
+                source_format=row["source_format"],
+                output_path=output,
+                receipt_path=receipt,
+                minimum_characters=args.minimum_characters,
+            )
+            print(
+                f"{result.law_id}: {result.text_characters:,} characters; "
+                f"sha256 {result.text_sha256[:12]}"
+            )
+        except Exception as exc:  # noqa: BLE001 - report every failed source in bulk collection
+            failures.append(row["law_id"])
+            print(f"ERROR {row['law_id']}: {exc}")
+    print(f"\nFetched {len(rows) - len(failures)} of {len(rows)} sources")
+    return 1 if failures else 0
 
 
 def _coding_inputs(
@@ -148,6 +177,15 @@ def build_parser() -> argparse.ArgumentParser:
     validate = subparsers.add_parser("validate-sources")
     validate.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
     validate.set_defaults(func=command_validate_sources)
+
+    fetch = subparsers.add_parser("fetch-sources")
+    fetch.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
+    fetch.add_argument("--limit", type=int)
+    fetch.add_argument("--minimum-characters", type=int, default=2_000)
+    fetch.add_argument(
+        "--receipt-dir", default=PROJECT_ROOT / "data" / "interim" / "source_receipts"
+    )
+    fetch.set_defaults(func=command_fetch_sources)
 
     estimate = subparsers.add_parser("estimate-cost")
     estimate.add_argument("--manifest", default=PROJECT_ROOT / "config" / "source_manifest.csv")
