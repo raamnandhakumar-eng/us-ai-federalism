@@ -8,7 +8,7 @@ from typing import Any
 
 from .costs import estimate_cost
 from .retrieval import normalize_text, render_passages, retrieve_passages
-from .schema import LawCodingResponse, LawRecord
+from .schema import LawCodingResponse, LawRecord, ObligationLabel, RawLawCodingResponse
 from .settings import (
     CODING_MAX_OUTPUT_TOKENS,
     MODEL_PRICING,
@@ -59,12 +59,69 @@ def _atomic_json_write(path: Path, payload: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
-def _extract_parsed_output(message: Any) -> LawCodingResponse:
+def _extract_parsed_output(message: Any) -> RawLawCodingResponse:
     for block in message.content:
         parsed = getattr(block, "parsed_output", None)
         if parsed is not None:
-            return LawCodingResponse.model_validate(parsed)
+            return RawLawCodingResponse.model_validate(parsed)
     raise ValueError("Claude response did not contain parsed structured output")
+
+
+def _exact_excerpt(text: str, limit: int) -> tuple[str, bool]:
+    clean = " ".join(text.split())
+    if len(clean) <= limit:
+        return clean, False
+    excerpt = clean[:limit]
+    if " " in excerpt:
+        excerpt = excerpt.rsplit(" ", 1)[0]
+    return excerpt, True
+
+
+def _coerce_research_schema(raw: RawLawCodingResponse) -> LawCodingResponse:
+    obligations: list[ObligationLabel] = []
+    adjusted_document = False
+    for item in raw.obligations:
+        evidence, clipped = _exact_excerpt(item.evidence_quote, 600)
+        covered = item.covered
+        strength = max(0, min(3, int(item.strength)))
+        adjusted = clipped or strength != item.strength
+        if covered and strength == 0:
+            strength = 1
+            adjusted = True
+        if covered and not evidence:
+            covered = False
+            strength = 0
+            adjusted = True
+        if not covered and strength != 0:
+            strength = 0
+            adjusted = True
+        notes, notes_clipped = _exact_excerpt(item.notes, 330)
+        adjusted = adjusted or notes_clipped
+        if adjusted:
+            suffix = "API output normalized; verify during human review."
+            notes = f"{notes} {suffix}".strip()
+        obligations.append(
+            ObligationLabel(
+                domain=item.domain,
+                covered=covered,
+                strength=strength,
+                regulated_actor=_exact_excerpt(item.regulated_actor, 120)[0],
+                sector=_exact_excerpt(item.sector, 120)[0],
+                effective_date=_exact_excerpt(item.effective_date, 40)[0],
+                section_reference=_exact_excerpt(item.section_reference, 120)[0],
+                evidence_quote=evidence,
+                confidence=max(0.0, min(1.0, float(item.confidence))),
+                notes=notes,
+            )
+        )
+        adjusted_document = adjusted_document or adjusted
+    document_notes, document_clipped = _exact_excerpt(raw.document_notes, 600)
+    return LawCodingResponse(
+        law_id=raw.law_id,
+        obligations=obligations,
+        document_notes=document_notes,
+        needs_human_review=(raw.needs_human_review or adjusted_document or document_clipped),
+    )
 
 
 def _verify_quotes(result: LawCodingResponse, source_text: str) -> LawCodingResponse:
@@ -141,9 +198,11 @@ class ClaudeLawCoder:
             max_tokens=CODING_MAX_OUTPUT_TOKENS,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
-            output_format=LawCodingResponse,
+            output_format=RawLawCodingResponse,
         )
-        result = _verify_quotes(_extract_parsed_output(message), source_text)
+        result = _verify_quotes(
+            _coerce_research_schema(_extract_parsed_output(message)), source_text
+        )
         pricing = MODEL_PRICING[self.model]
         input_tokens = int(message.usage.input_tokens)
         output_tokens = int(message.usage.output_tokens)

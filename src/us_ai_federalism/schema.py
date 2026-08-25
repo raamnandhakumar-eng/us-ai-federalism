@@ -86,3 +86,29 @@ class LawCodingResponse(BaseModel):
     obligations: list[ObligationLabel]
     document_notes: str = Field(default="", max_length=600)
     needs_human_review: bool
+
+
+class RawObligationLabel(BaseModel):
+    """Permissive API shape; converted to the strict research schema after receipt."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    domain: ObligationDomain
+    covered: bool
+    strength: int
+    regulated_actor: str
+    sector: str
+    effective_date: str = ""
+    section_reference: str
+    evidence_quote: str
+    confidence: float
+    notes: str = ""
+
+
+class RawLawCodingResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    law_id: str
+    obligations: list[RawObligationLabel]
+    document_notes: str = ""
+    needs_human_review: bool
