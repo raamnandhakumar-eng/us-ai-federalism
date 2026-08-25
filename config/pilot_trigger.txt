@@ -1,0 +1,2 @@
+protocol-v0.2 pilot
+Triggered after free CI passed on 2026-08-25.
