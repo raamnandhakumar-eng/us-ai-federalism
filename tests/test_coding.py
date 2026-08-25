@@ -124,3 +124,33 @@ def test_verifier_rejects_noncontiguous_quote() -> None:
     assert result.obligations[0].evidence_verified is False
     assert result.obligations[0].confidence == 0.25
     assert result.needs_human_review is True
+
+
+def test_explicit_no_private_right_can_be_verified_as_negative_evidence() -> None:
+    source = "Section 10. This chapter does not create a private right of action."
+    passage = Passage("P001", "private_right", 0, len(source), source)
+    raw = RawLawCodingResponse.model_validate(
+        {
+            "law_id": "TX-2025-HB149",
+            "obligations": [
+                {
+                    "domain": "private_right",
+                    "covered": False,
+                    "strength": 0,
+                    "regulated_actor": "private person",
+                    "sector": "all",
+                    "section_reference": "Section 10",
+                    "evidence_passage": "P001",
+                    "evidence_quote": "This chapter does not create a private right of action.",
+                    "confidence": 0.99,
+                    "notes": "Express denial, not silence.",
+                }
+            ],
+            "document_notes": "",
+            "needs_human_review": False,
+        }
+    )
+    result = _verify_quotes(_coerce_research_schema(raw), source, [passage])
+    assert result.obligations[0].covered is False
+    assert result.obligations[0].evidence_verified is True
+    assert result.obligations[0].confidence == 0.99
