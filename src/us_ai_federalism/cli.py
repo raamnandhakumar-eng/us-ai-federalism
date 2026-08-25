@@ -134,6 +134,23 @@ def command_code_laws(args: argparse.Namespace) -> int:
     return 0
 
 
+def _read_floor_config(path: str | Path | None) -> dict[str, int] | None:
+    if path is None:
+        return None
+    frame = pd.read_csv(path)
+    required = {"domain", "minimum_strength"}
+    missing = required.difference(frame.columns)
+    if missing:
+        raise ValueError(f"Federal floor config missing columns: {sorted(missing)}")
+    if frame["domain"].duplicated().any():
+        duplicates = sorted(frame.loc[frame["domain"].duplicated(), "domain"].unique())
+        raise ValueError(f"Federal floor config has duplicate domains: {duplicates}")
+    return {
+        str(row.domain): int(row.minimum_strength)
+        for row in frame[["domain", "minimum_strength"]].itertuples(index=False)
+    }
+
+
 def command_analyze(args: argparse.Namespace) -> int:
     from .plotting import plot_coverage
 
@@ -146,8 +163,19 @@ def command_analyze(args: argparse.Namespace) -> int:
         raise ValueError(
             f"Fill every {args.weight_column} value before using that weighting scheme"
         )
-    grid = prepare_state_domain(codings, states, args.include_unreviewed)
-    estimates = simulate_all(grid, args.floor_strength)
+    domain_universe = list(load_domains())
+    grid = prepare_state_domain(
+        codings,
+        states,
+        args.include_unreviewed,
+        domains=domain_universe,
+    )
+    floor_strengths = _read_floor_config(args.floor_config)
+    estimates = simulate_all(
+        grid,
+        floor_strength=args.floor_strength,
+        floor_strengths=floor_strengths,
+    )
     effects = scenario_effects(estimates)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -156,6 +184,8 @@ def command_analyze(args: argparse.Namespace) -> int:
     plot_coverage(estimates, args.figure)
     print(f"Wrote estimates to {output_dir}")
     print(f"Wrote figure to {args.figure}")
+    if floor_strengths is not None:
+        print(f"Used domain-specific federal floor from {args.floor_config}")
     if args.include_unreviewed:
         print("WARNING: output includes unreviewed model labels and is not a research finding.")
     return 0
@@ -226,6 +256,10 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--states", default=PROJECT_ROOT / "config" / "state_universe.csv")
     analyze.add_argument("--weight-column", default="weight")
     analyze.add_argument("--floor-strength", type=int, default=1)
+    analyze.add_argument(
+        "--floor-config",
+        help="CSV with domain,minimum_strength columns; overrides --floor-strength",
+    )
     analyze.add_argument("--include-unreviewed", action="store_true")
     analyze.add_argument("--output-dir", default=PROJECT_ROOT / "data" / "processed")
     analyze.add_argument("--figure", default=PROJECT_ROOT / "figures" / "coverage_scenarios.png")
