@@ -1,0 +1,79 @@
+name: snapshot supplement
+
+on:
+  push:
+    paths:
+      - "config/snapshot_supplement_trigger.txt"
+      - ".github/workflows/snapshot_supplement.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  supplement:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install and test
+        run: |
+          pip install -e ".[dev]"
+          ruff check .
+          pytest -q
+      - name: Fetch supplement primary sources
+        run: |
+          uaf fetch-sources --manifest config/snapshot_supplement_manifest.csv --receipt-dir data/interim/supplement_source_receipts
+          uaf validate-sources --manifest config/snapshot_supplement_manifest.csv
+      - name: Enforce supplement budget
+        run: |
+          uaf estimate-cost --manifest config/snapshot_supplement_manifest.csv > /tmp/supplement_cost.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          estimate = json.loads(Path('/tmp/supplement_cost.json').read_text())
+          ceiling = 1.50
+          if estimate['usd'] > ceiling:
+              raise SystemExit(f"Estimated cost ${estimate['usd']:.4f} exceeds ${ceiling:.2f} supplement ceiling")
+          print(f"Preflight passed: ${estimate['usd']:.4f} <= ${ceiling:.2f}")
+          PY
+      - name: Code supplement
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          uaf code-laws \
+            --manifest config/snapshot_supplement_manifest.csv \
+            --max-spend 1.50 \
+            --output data/processed/supplement_codings_unreviewed.csv
+      - name: Quality report
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import pandas as pd
+          df = pd.read_csv('data/processed/supplement_codings_unreviewed.csv')
+          verified = df['evidence_verified'].astype(str).str.lower().eq('true')
+          summary = {
+              'rows': int(len(df)),
+              'laws_with_labels': int(df['law_id'].nunique()),
+              'quote_verified_rows': int(verified.sum()),
+              'quote_verified_rate': float(verified.mean()) if len(df) else 0.0,
+          }
+          Path('data/processed/supplement_quality_summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+          print(json.dumps(summary, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-supplement-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            /tmp/supplement_cost.json
+            data/raw/supplement/*.txt
+            data/interim/supplement_source_receipts/*.json
+            data/processed/supplement_codings_unreviewed.csv
+            data/processed/supplement_codings_unreviewed_usage.csv
+            data/processed/supplement_quality_summary.json
