@@ -9,6 +9,7 @@ REVISION_MAP = {
     "revised_actor": "regulated_actor",
     "revised_sector": "sector",
     "revised_effective_date": "effective_date",
+    "revised_inactive_from_date": "inactive_from_date",
     "revised_section_reference": "section_reference",
     "revised_evidence_quote": "evidence_quote",
 }
