@@ -7,25 +7,38 @@ from pathlib import Path
 from typing import Any
 
 from .costs import estimate_cost
-from .retrieval import normalize_text, render_passages, retrieve_passages
+from .retrieval import Passage, normalize_text, render_passages, retrieve_passages
 from .schema import LawCodingResponse, LawRecord, ObligationLabel, RawLawCodingResponse
 from .settings import (
     CODING_MAX_OUTPUT_TOKENS,
     MODEL_PRICING,
     PROJECT_ROOT,
     PROMPT_VERSION,
+    load_domain_definitions,
     load_domains,
 )
 
 SYSTEM_PROMPT = """You are assisting a transparent empirical study of U.S. AI statutes.
 Code only what the supplied primary legal text expressly supports. Do not use outside knowledge.
-A positive code requires operative legal language and an exact supporting quote from the supplied
-text. Do not infer a private right of action, legal preemption, or coverage from silence. Treat
-findings, intent, optional guidance, and study commissions as nonbinding. When text is incomplete,
-flag human review. This is structured research coding, not legal advice."""
+A positive code requires operative legal language and a contiguous verbatim supporting quote from
+one supplied passage. Never insert ellipses, omit words, paraphrase statutory text, or reconstruct
+a quote from separate sentences. Do not infer a private right of action, legal preemption, or
+coverage from silence. Treat findings, intent, optional guidance, study commissions, agency
+administration, and nonbinding recommendations as nonbinding unless the statute creates an
+independently enforceable duty. When text is incomplete or classification is uncertain, flag human
+review. This is structured research coding, not legal advice."""
 
 
-def build_prompt(law: LawRecord, passage_text: str) -> str:
+def _render_domain_definitions(definitions: dict[str, str]) -> str:
+    return "\n".join(f"- {domain}: {definition}" for domain, definition in definitions.items())
+
+
+def build_prompt(
+    law: LawRecord,
+    passage_text: str,
+    domain_definitions: dict[str, str] | None = None,
+) -> str:
+    definitions = domain_definitions or load_domain_definitions()
     return f"""LAW METADATA
 law_id: {law.law_id}
 state: {law.state}
@@ -34,13 +47,34 @@ title: {law.title}
 source: {law.primary_source_url}
 
 TASK
-Identify every distinct enforceable AI-specific obligation in the supplied passages. Use only the
-fixed domains in the response schema. Return positive rows only unless a passage appears relevant
-but proves that the domain is absent. Strength is 1 for disclosure/procedure, 2 for assessment,
-mitigation or human review, and 3 for a prohibition, individual right, mandatory human decision,
-or duty backed by a specified penalty. Keep the evidence quote verbatim and under 600 characters.
-Use the statutory section when visible. Set needs_human_review true for incomplete, conflicting,
-amended, ambiguous, or cross-referenced text.
+Identify each distinct enforceable AI-specific obligation in the supplied passages. Return positive
+rows only. Use exactly one fixed domain below for each row. A DOMAIN_HINT in a passage is a search
+hint only; it is NOT evidence that the passage belongs to that domain.
+
+Do not split one statutory duty into multiple rows merely because it has multiple clauses. Create
+separate rows only when the duties are independently enforceable or protect materially different
+actors/rights. Do not duplicate the same obligation across broad and narrow domains. Prefer the
+most specific domain that matches the operative duty.
+
+For every positive row:
+1. evidence_passage must be exactly the P### identifier of one supplied passage.
+2. evidence_quote must be one contiguous verbatim substring from that passage, preferably 40-500
+   characters and never more than 600 characters.
+3. Do not use ellipses, square-bracket substitutions, paraphrases, or text assembled from separate
+   locations.
+4. section_reference must come from visible supplied text. Leave it blank if not visible.
+5. effective_date must come from visible supplied text. Leave it blank if not visible.
+6. Set needs_human_review=true if a cross-reference, amendment, exception, missing definition, or
+   incomplete passage could materially change the code.
+
+Strength coding:
+- 1 = disclosure or procedural duty
+- 2 = assessment, risk-management, mitigation, evaluation, or human-review duty
+- 3 = prohibition, individual right, mandatory human decision, or mandate backed by a specified
+      penalty
+
+FIXED DOMAIN DEFINITIONS
+{_render_domain_definitions(definitions)}
 
 PRIMARY-TEXT PASSAGES
 {passage_text}
@@ -82,13 +116,14 @@ def _coerce_research_schema(raw: RawLawCodingResponse) -> LawCodingResponse:
     adjusted_document = False
     for item in raw.obligations:
         evidence, clipped = _exact_excerpt(item.evidence_quote, 600)
+        passage, passage_clipped = _exact_excerpt(item.evidence_passage, 16)
         covered = item.covered
         strength = max(0, min(3, int(item.strength)))
-        adjusted = clipped or strength != item.strength
+        adjusted = clipped or passage_clipped or strength != item.strength
         if covered and strength == 0:
             strength = 1
             adjusted = True
-        if covered and not evidence:
+        if covered and (not evidence or not passage):
             covered = False
             strength = 0
             adjusted = True
@@ -109,7 +144,9 @@ def _coerce_research_schema(raw: RawLawCodingResponse) -> LawCodingResponse:
                 sector=_exact_excerpt(item.sector, 120)[0],
                 effective_date=_exact_excerpt(item.effective_date, 40)[0],
                 section_reference=_exact_excerpt(item.section_reference, 120)[0],
+                evidence_passage=passage,
                 evidence_quote=evidence,
+                evidence_verified=False,
                 confidence=max(0.0, min(1.0, float(item.confidence))),
                 notes=notes,
             )
@@ -124,17 +161,61 @@ def _coerce_research_schema(raw: RawLawCodingResponse) -> LawCodingResponse:
     )
 
 
-def _verify_quotes(result: LawCodingResponse, source_text: str) -> LawCodingResponse:
+def _verify_quotes(
+    result: LawCodingResponse,
+    source_text: str,
+    passages: list[Passage],
+) -> LawCodingResponse:
     normalized_source = normalize_text(source_text).lower()
+    passage_lookup = {
+        passage.passage_id: normalize_text(passage.text).lower() for passage in passages
+    }
+
     for obligation in result.obligations:
-        if (
-            obligation.covered
-            and normalize_text(obligation.evidence_quote).lower() not in normalized_source
-        ):
-            obligation.confidence = min(obligation.confidence, 0.25)
-            suffix = "Evidence quote did not match the supplied source text exactly."
-            obligation.notes = f"{obligation.notes} {suffix}".strip()
-            result.needs_human_review = True
+        obligation.evidence_verified = False
+        if not obligation.covered:
+            continue
+
+        quote = normalize_text(obligation.evidence_quote).lower()
+        passage = passage_lookup.get(obligation.evidence_passage)
+        quote_matches_passage = bool(passage and quote and quote in passage)
+        quote_matches_source = bool(quote and quote in normalized_source)
+
+        if quote_matches_passage and quote_matches_source:
+            obligation.evidence_verified = True
+            continue
+
+        obligation.confidence = min(obligation.confidence, 0.25)
+        if passage is None:
+            suffix = "Evidence passage ID was not present in the supplied source passages."
+        else:
+            suffix = "Evidence quote was not a contiguous verbatim substring of its source passage."
+        obligation.notes = f"{obligation.notes} {suffix}".strip()
+        result.needs_human_review = True
+    return result
+
+
+def _deduplicate_obligations(result: LawCodingResponse) -> LawCodingResponse:
+    seen: set[tuple[str, str, str, str]] = set()
+    deduplicated: list[ObligationLabel] = []
+    removed = 0
+    for obligation in result.obligations:
+        key = (
+            obligation.domain.value,
+            normalize_text(obligation.section_reference).lower(),
+            normalize_text(obligation.evidence_quote).lower(),
+            normalize_text(obligation.regulated_actor).lower(),
+        )
+        if key in seen:
+            removed += 1
+            continue
+        seen.add(key)
+        deduplicated.append(obligation)
+    result.obligations = deduplicated
+    if removed:
+        suffix = f"Removed {removed} exact duplicate model label(s)."
+        result.document_notes = f"{result.document_notes} {suffix}".strip()[:600]
+        result.needs_human_review = True
     return result
 
 
@@ -196,12 +277,17 @@ class ClaudeLawCoder:
         message = client.messages.parse(
             model=self.model,
             max_tokens=CODING_MAX_OUTPUT_TOKENS,
+            temperature=0,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
             output_format=RawLawCodingResponse,
         )
-        result = _verify_quotes(
-            _coerce_research_schema(_extract_parsed_output(message)), source_text
+        result = _deduplicate_obligations(
+            _verify_quotes(
+                _coerce_research_schema(_extract_parsed_output(message)),
+                source_text,
+                passages,
+            )
         )
         pricing = MODEL_PRICING[self.model]
         input_tokens = int(message.usage.input_tokens)
@@ -228,7 +314,10 @@ class ClaudeLawCoder:
 def flatten_result(law: LawRecord, result: LawCodingResponse, model: str) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for sequence, obligation in enumerate(result.obligations, start=1):
-        seed = f"{law.law_id}|{obligation.domain.value}|{sequence}|{obligation.evidence_quote}"
+        seed = (
+            f"{law.law_id}|{obligation.domain.value}|{sequence}|"
+            f"{obligation.evidence_passage}|{obligation.evidence_quote}"
+        )
         coding_id = hashlib.sha256(seed.encode("utf-8")).hexdigest()[:20]
         rows.append(
             {
