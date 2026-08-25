@@ -52,6 +52,9 @@ class LawRecord(BaseModel):
     primary_source_url: str
     local_text_path: str
     source_format: str
+    transport_policy: str = "strict"
+    expected_raw_sha256: str = ""
+    expected_text_marker: str = ""
     amends_law_id: str | None = None
     inactive_from_date: date | None = None
     superseded_by_law_id: str | None = None
