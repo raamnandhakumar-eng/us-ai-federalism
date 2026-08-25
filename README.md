@@ -4,7 +4,7 @@
 
 An empirical U.S. AI federalism project measuring which public protections would be preserved, displaced, or standardized under alternative federal preemption frameworks.
 
-> **Research status:** preregistered-design stage. The repository contains the coding protocol, source manifest, validation rules, simulation code, and synthetic tests. It does **not** yet report findings from the completed statutory universe.
+> **Research status:** pre-analysis design stage. The repository contains a preregistration-ready protocol, source manifest, validation rules, simulation code, and synthetic tests. It does **not** yet report findings from the completed statutory universe.
 
 ## Question
 
