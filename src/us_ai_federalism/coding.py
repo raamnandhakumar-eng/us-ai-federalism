@@ -277,7 +277,6 @@ class ClaudeLawCoder:
         message = client.messages.parse(
             model=self.model,
             max_tokens=CODING_MAX_OUTPUT_TOKENS,
-            temperature=0,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
             output_format=RawLawCodingResponse,
