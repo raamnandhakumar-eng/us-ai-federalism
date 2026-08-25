@@ -48,15 +48,17 @@ source: {law.primary_source_url}
 
 TASK
 Identify each distinct enforceable AI-specific obligation in the supplied passages. Return positive
-rows only. Use exactly one fixed domain below for each row. A DOMAIN_HINT in a passage is a search
-hint only; it is NOT evidence that the passage belongs to that domain.
+rows only, except that an express statutory statement denying a private right of action may be
+returned as domain=private_right, covered=false, strength=0. Use exactly one fixed domain below for
+each row. A DOMAIN_HINT in a passage is a search hint only; it is NOT evidence that the passage
+belongs to that domain.
 
 Do not split one statutory duty into multiple rows merely because it has multiple clauses. Create
 separate rows only when the duties are independently enforceable or protect materially different
 actors/rights. Do not duplicate the same obligation across broad and narrow domains. Prefer the
-most specific domain that matches the operative duty.
+most specific domain that matches the operative legal duty, not the topic discussed in the text.
 
-For every positive row:
+For every returned row:
 1. evidence_passage must be exactly the P### identifier of one supplied passage.
 2. evidence_quote must be one contiguous verbatim substring from that passage, preferably 40-500
    characters and never more than 600 characters.
@@ -67,11 +69,13 @@ For every positive row:
 6. Set needs_human_review=true if a cross-reference, amendment, exception, missing definition, or
    incomplete passage could materially change the code.
 
-Strength coding:
-- 1 = disclosure or procedural duty
-- 2 = assessment, risk-management, mitigation, evaluation, or human-review duty
-- 3 = prohibition, individual right, mandatory human decision, or mandate backed by a specified
-      penalty
+Strength coding describes the legal form of the obligation, not its social value or enforcement:
+- 1 = disclosure, reporting, documentation, or procedural duty
+- 2 = assessment, risk-management, mitigation, technical evaluation, or human-review duty
+- 3 = prohibition or individual right
+
+A deadline alone does not increase strength. A penalty provision is coded separately under penalty
+and does not automatically increase the strength of every other obligation in the law.
 
 FIXED DOMAIN DEFINITIONS
 {_render_domain_definitions(definitions)}
@@ -173,13 +177,19 @@ def _verify_quotes(
 
     for obligation in result.obligations:
         obligation.evidence_verified = False
-        if not obligation.covered:
-            continue
-
         quote = normalize_text(obligation.evidence_quote).lower()
         passage = passage_lookup.get(obligation.evidence_passage)
-        quote_matches_passage = bool(passage and quote and quote in passage)
-        quote_matches_source = bool(quote and quote in normalized_source)
+        if not quote or not obligation.evidence_passage:
+            if obligation.covered:
+                obligation.confidence = min(obligation.confidence, 0.25)
+                obligation.notes = (
+                    f"{obligation.notes} Positive row lacks verifiable evidence provenance."
+                ).strip()
+                result.needs_human_review = True
+            continue
+
+        quote_matches_passage = bool(passage and quote in passage)
+        quote_matches_source = quote in normalized_source
 
         if quote_matches_passage and quote_matches_source:
             obligation.evidence_verified = True
