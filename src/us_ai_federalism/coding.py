@@ -53,11 +53,12 @@ def _atomic_json_write(path: Path, payload: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
-def _extract_text_block(message: Any) -> str:
+def _extract_parsed_output(message: Any) -> LawCodingResponse:
     for block in message.content:
-        if getattr(block, "type", None) == "text":
-            return block.text
-    raise ValueError("Claude response did not contain a text block")
+        parsed = getattr(block, "parsed_output", None)
+        if parsed is not None:
+            return LawCodingResponse.model_validate(parsed)
+    raise ValueError("Claude response did not contain parsed structured output")
 
 
 def _verify_quotes(result: LawCodingResponse, source_text: str) -> LawCodingResponse:
@@ -125,20 +126,14 @@ class ClaudeLawCoder:
             )
 
         client = self._client()
-        message = client.messages.create(
+        message = client.messages.parse(
             model=self.model,
             max_tokens=2200,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
-            output_config={
-                "format": {
-                    "type": "json_schema",
-                    "schema": LawCodingResponse.model_json_schema(),
-                }
-            },
+            output_format=LawCodingResponse,
         )
-        raw_result = json.loads(_extract_text_block(message))
-        result = _verify_quotes(LawCodingResponse.model_validate(raw_result), source_text)
+        result = _verify_quotes(_extract_parsed_output(message), source_text)
         pricing = MODEL_PRICING[self.model]
         input_tokens = int(message.usage.input_tokens)
         output_tokens = int(message.usage.output_tokens)
