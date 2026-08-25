@@ -68,3 +68,33 @@ def test_floor_closes_binary_coverage_gap() -> None:
     estimates = simulate_all(prepare_state_domain(codings, states), floor_strength=1)
     floor = estimates.query("scenario == 'federal_floor'")
     assert (floor["coverage"] == 1).all()
+
+
+def test_fixed_domain_universe_keeps_zero_adoption_domain() -> None:
+    codings, states = sample_data()
+    domains = ["consumer_notice", "child_safety", "model_evaluation"]
+    grid = prepare_state_domain(codings, states, domains=domains)
+    missing_domain = grid.query("domain == 'model_evaluation'")
+    assert len(missing_domain) == 2
+    assert missing_domain["strength"].sum() == 0
+
+
+def test_domain_specific_floor_only_changes_selected_domains() -> None:
+    codings, states = sample_data()
+    domains = ["consumer_notice", "child_safety", "model_evaluation"]
+    grid = prepare_state_domain(codings, states, domains=domains)
+    floor = apply_scenario(
+        grid,
+        "federal_floor",
+        floor_strengths={"consumer_notice": 2, "model_evaluation": 1},
+    )
+    assert (floor.query("domain == 'consumer_notice'")["strength"] >= 2).all()
+    assert (floor.query("domain == 'model_evaluation'")["strength"] == 1).all()
+    assert floor.query("state == 'BB' and domain == 'child_safety'")["strength"].item() == 0
+
+
+def test_binary_heterogeneity_is_zero_at_full_coverage() -> None:
+    codings, states = sample_data()
+    estimates = simulate_all(prepare_state_domain(codings, states), floor_strength=1)
+    floor = estimates.query("scenario == 'federal_floor'")
+    assert (floor["binary_heterogeneity"] == 0).all()
