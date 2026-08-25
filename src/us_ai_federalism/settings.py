@@ -7,8 +7,8 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 DEFAULT_MAX_SPEND = 8.0
-CODING_MAX_OUTPUT_TOKENS = 6_000
-PROMPT_VERSION = "0.1.0"
+CODING_MAX_OUTPUT_TOKENS = 5_000
+PROMPT_VERSION = "0.2.0"
 
 # USD per million tokens. Verified against Anthropic's published pricing on 2026-08-25.
 MODEL_PRICING = {
@@ -24,7 +24,16 @@ def max_spend() -> float:
     return float(os.getenv("MAX_API_SPEND_USD", str(DEFAULT_MAX_SPEND)))
 
 
-def load_domains(path: Path | None = None) -> dict[str, list[str]]:
+def _domain_config(path: Path | None = None) -> dict[str, object]:
     config_path = path or PROJECT_ROOT / "config" / "policy_domains.json"
-    payload = json.loads(config_path.read_text(encoding="utf-8"))
-    return payload["domains"]
+    return json.loads(config_path.read_text(encoding="utf-8"))
+
+
+def load_domains(path: Path | None = None) -> dict[str, list[str]]:
+    payload = _domain_config(path)
+    return payload["domains"]  # type: ignore[return-value]
+
+
+def load_domain_definitions(path: Path | None = None) -> dict[str, str]:
+    payload = _domain_config(path)
+    return payload.get("definitions", {})  # type: ignore[return-value]
