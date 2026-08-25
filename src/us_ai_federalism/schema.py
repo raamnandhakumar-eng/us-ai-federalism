@@ -16,15 +16,20 @@ class ReviewStatus(str, Enum):
 
 class ObligationDomain(str, Enum):
     impact_assessment = "impact_assessment"
+    risk_management = "risk_management"
     model_evaluation = "model_evaluation"
     human_oversight = "human_oversight"
     consumer_notice = "consumer_notice"
+    public_transparency = "public_transparency"
     explanation_appeal = "explanation_appeal"
     antidiscrimination = "antidiscrimination"
     incident_reporting = "incident_reporting"
     frontier_safety = "frontier_safety"
+    harmful_use_restriction = "harmful_use_restriction"
     child_safety = "child_safety"
     health_restriction = "health_restriction"
+    synthetic_content = "synthetic_content"
+    whistleblower_protection = "whistleblower_protection"
     infrastructure = "infrastructure"
     government_use = "government_use"
     enforcement_authority = "enforcement_authority"
@@ -61,14 +66,22 @@ class ObligationLabel(BaseModel):
     sector: str = Field(max_length=120)
     effective_date: str = Field(default="", max_length=40)
     section_reference: str = Field(max_length=120)
+    evidence_passage: str = Field(default="", max_length=16)
     evidence_quote: str = Field(max_length=600)
+    evidence_verified: bool = False
     confidence: float = Field(ge=0, le=1)
     notes: str = Field(default="", max_length=400)
 
     @model_validator(mode="after")
     def enforce_positive_evidence(self) -> ObligationLabel:
-        if self.covered and (self.strength == 0 or not self.evidence_quote.strip()):
-            raise ValueError("Positive codes require strength > 0 and an evidence quote")
+        if self.covered and (
+            self.strength == 0
+            or not self.evidence_quote.strip()
+            or not self.evidence_passage.strip()
+        ):
+            raise ValueError(
+                "Positive codes require strength > 0, an evidence passage, and an evidence quote"
+            )
         if not self.covered and self.strength != 0:
             raise ValueError("Negative codes must have strength 0")
         return self
@@ -100,6 +113,7 @@ class RawObligationLabel(BaseModel):
     sector: str
     effective_date: str = ""
     section_reference: str
+    evidence_passage: str = ""
     evidence_quote: str
     confidence: float
     notes: str = ""
