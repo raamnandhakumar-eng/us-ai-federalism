@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="850" height="500" viewBox="0 0 850 500">
+<rect width="100%" height="100%" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#111}.t{font-size:24px;font-weight:700}.l{font-size:14px}.s{font-size:12px}</style>
+<text x="425.0" y="35" text-anchor="middle" class="t">Mean population-weighted domain coverage by scenario</text>
+<line x1="95" y1="415.0" x2="820" y2="415.0" stroke="#ddd"/><text x="85" y="419.0" text-anchor="end" class="s">0%</text>
+<line x1="95" y1="348.0" x2="820" y2="348.0" stroke="#ddd"/><text x="85" y="352.0" text-anchor="end" class="s">20%</text>
+<line x1="95" y1="281.0" x2="820" y2="281.0" stroke="#ddd"/><text x="85" y="285.0" text-anchor="end" class="s">40%</text>
+<line x1="95" y1="214.0" x2="820" y2="214.0" stroke="#ddd"/><text x="85" y="218.0" text-anchor="end" class="s">60%</text>
+<line x1="95" y1="147.0" x2="820" y2="147.0" stroke="#ddd"/><text x="85" y="151.0" text-anchor="end" class="s">80%</text>
+<line x1="95" y1="80.0" x2="820" y2="80.0" stroke="#ddd"/><text x="85" y="84.0" text-anchor="end" class="s">100%</text>
+<rect x="134.9" y="362.8" width="39.9" height="52.2" fill="#4c78a8"/><text x="154.8" y="357.8" text-anchor="middle" class="s">15.6</text>
+<rect x="180.2" y="350.3" width="39.9" height="64.7" fill="#f58518"/><text x="200.1" y="345.3" text-anchor="middle" class="s">19.3</text>
+<text x="185.6" y="452" text-anchor="middle" class="l">Current</text>
+<rect x="316.1" y="408.9" width="39.9" height="6.1" fill="#4c78a8"/><text x="336.1" y="403.9" text-anchor="middle" class="s">1.8</text>
+<rect x="361.4" y="406.6" width="39.9" height="8.4" fill="#f58518"/><text x="381.4" y="401.6" text-anchor="middle" class="s">2.5</text>
+<text x="366.9" y="452" text-anchor="middle" class="l">EO carve-outs</text>
+<rect x="497.4" y="415.0" width="39.9" height="0.0" fill="#4c78a8"/><text x="517.3" y="410.0" text-anchor="middle" class="s">0.0</text>
+<rect x="542.7" y="415.0" width="39.9" height="0.0" fill="#f58518"/><text x="562.6" y="410.0" text-anchor="middle" class="s">0.0</text>
+<text x="548.1" y="452" text-anchor="middle" class="l">Broad ceiling</text>
+<rect x="678.6" y="80.0" width="39.9" height="335.0" fill="#4c78a8"/><text x="698.6" y="75.0" text-anchor="middle" class="s">100.0</text>
+<rect x="723.9" y="80.0" width="39.9" height="335.0" fill="#f58518"/><text x="743.9" y="75.0" text-anchor="middle" class="s">100.0</text>
+<text x="729.4" y="452" text-anchor="middle" class="l">Federal floor</text>
+<rect x="595" y="50" width="14" height="14" fill="#4c78a8"/><text x="615" y="62" class="s">Aug. 25, 2026</text>
+<rect x="715" y="50" width="14" height="14" fill="#f58518"/><text x="735" y="62" class="s">Jan. 1, 2027</text>
+</svg>
