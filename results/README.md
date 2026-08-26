@@ -37,6 +37,16 @@ The simulations are transparent policy benchmarks, not predictions of enacted fe
 - **EO 14365 carve-out benchmark:** child safety, AI infrastructure, and government-use obligations survive. This preserves **11.7%** of aggregate observed domain coverage at the primary snapshot and **13.0%** at the 2027 snapshot.
 - **Stylized federal floor:** a strength-1 federal minimum is imposed in every substantive codebook domain and stronger state rules remain. Geographic coverage becomes 100% by construction, while state strength above the floor is preserved.
 
+## Robustness checks
+
+Three prespecified-style sensitivity analyses now accompany the main results:
+
+- **Unweighted jurisdictions:** mean domain coverage is **7.2%** on 2026-08-25 and **10.1%** on 2027-01-01, confirming that population weighting raises incidence because several large states are early movers.
+- **Leave-large-state-out:** August mean domain coverage falls from 15.6% to **11.1% without California**, **10.4% without Texas**, and **4.1% without California, Texas, and New York together**.
+- **Alternative preemption mappings:** the narrow EO mapping retains **11.7%** of observed aggregate coverage in August 2026, while the expanded police-power preservation bound retains **52.1%**.
+
+See `../docs/robustness_checks.md` for interpretation and scenario definitions.
+
 ## Files
 
 - `domain_coverage_2026-08-25.csv`: primary snapshot.
@@ -45,6 +55,9 @@ The simulations are transparent policy benchmarks, not predictions of enacted fe
 - `scenarios_by_domain_2027-01-01.csv`: 2027 domain-by-scenario estimates.
 - `scenario_summary.csv`: aggregate scenario summaries.
 - `state_summary.csv`: state protection breadth.
+- `robustness_unweighted_domain_coverage.csv`: equal-weight state-domain estimates.
+- `robustness_leave_large_states_out_summary.csv`: California/Texas/New York sensitivity.
+- `robustness_preemption_mapping_bounds.csv`: narrow and expanded carve-out bounds.
 - `../figures/*.svg`: vector figures from the provisional results.
 
 ## Important limitation
