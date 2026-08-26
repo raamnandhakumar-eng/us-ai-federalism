@@ -2,120 +2,137 @@
 
 ## The Coverage and Fragmentation Effects of Preempting State AI Laws
 
-An empirical U.S. AI federalism project measuring which public protections would be preserved, displaced, or standardized under alternative federal preemption frameworks.
+An empirical U.S. AI federalism project measuring which state-level AI protections would be preserved, displaced, or standardized under alternative federal preemption frameworks.
 
-> **Research status:** pre-analysis design and validation stage. A paid three-law pipeline pilot has run successfully, but its labels remain unreviewed and are not findings. The statutory universe is not yet frozen. See the [pilot validation note](docs/pilot_validation.md).
+> **Research status:** provisional empirical results are now available. The statutory universe is frozen as of **August 25, 2026**, the full source-clean corpus has been coded, and retained rows have undergone AI-assisted primary-text adjudication. The estimates below are working-paper results, **not publication-grade legal coding until independent human review is completed**.
 
-**Original contribution:** an obligation-level estimate of how federal AI ceilings, carve-outs, and
-floors would change population-weighted protection coverage and cross-state regulatory
-heterogeneity. The qualified novelty claim and closest related studies are documented in the
-[literature and novelty audit](docs/literature_review.md).
+**Original contribution:** an obligation-level estimate of how federal AI ceilings, carve-outs, and floors change population-weighted protection coverage and cross-state regulatory heterogeneity. The qualified novelty claim and closest related studies are documented in [`docs/literature_review.md`](docs/literature_review.md).
 
-## Question
+## Main question
 
-Would federal preemption reduce regulatory fragmentation without removing important state-level protections?
+Would federal preemption reduce regulatory fragmentation without removing meaningful protections created by state AI laws?
 
-The project compares three policy regimes:
+## Provisional findings
 
-| Regime | Policy rule | Quantity estimated |
+Using Census Vintage 2025 population weights across the 50 states plus D.C.:
+
+- On **August 25, 2026**, 15 states have at least one active substantive coded AI protection, representing **41.7%** of the U.S. state + D.C. population.
+- By **January 1, 2027**, 19 states have at least one active substantive coded protection, representing **47.4%** of the population.
+- Mean population-weighted coverage across the 18 substantive codebook domains rises from **15.6%** to **19.3%**.
+- Consumer notice is the broadest coded domain: **34.3%** of the population at the primary snapshot and **41.0%** at the 2027 snapshot.
+- Child-safety coverage grows from **22.6%** to **34.9%**, the largest near-term increase among the coded substantive domains.
+- Under the deliberately strong **broad federal ceiling** benchmark, selected state protection coverage is set to zero by construction.
+- Under the **EO 14365 carve-out** benchmark, only child-safety, infrastructure, and government-use protections survive. That retains about **11.7%** of aggregate observed domain coverage on August 25, 2026 and **13.0%** on January 1, 2027.
+- A stylized strength-1 **federal floor** closes geographic coverage gaps by construction while preserving stronger state scores.
+
+These are descriptive counterfactuals, not causal estimates of innovation, compliance cost, safety, or welfare.
+
+![Current domain coverage](figures/domain_coverage_current.svg)
+
+![Scenario coverage](figures/scenario_coverage.svg)
+
+![State protection breadth](figures/state_protection_breadth.svg)
+
+## Data and review status
+
+The frozen discovery registry contains **52 candidate state measures**. The source-clean main and supplemental runs produced **238 first-pass candidate rows**. After primary-text adjudication and manual recovery of provisions missed inside omnibus or codified laws, the final working analysis contains **247 positive obligation rows across 39 laws**.
+
+The review pass corrected recurring issues including:
+
+- general chatbot disclosure mislabeled as child safety;
+- health-specific prohibitions mislabeled as generic harmful-use restrictions;
+- record-retention duties mislabeled as risk-management programs;
+- regulator audit authority incorrectly treated as an independent regulated-entity duty;
+- individual correction or reconsideration rights underscored as procedural rather than rights; and
+- provisions missed in Minnesota, Connecticut, Maine, New York, and California omnibus or codified text.
+
+Every retained quotation in the working adjudication dataset is traceable to official primary legal text after normalization. The released repository tables are provisional analytical outputs; the row-level adjudication dataset is not treated as publication-grade legal data until independent human review is complete.
+
+## Corpus cost and reproducibility
+
+Known Claude API spend:
+
+| Stage | Actual spend |
+|---|---:|
+| Pilot 1 | $0.069334 |
+| Pilot 2 | $0.140119 |
+| Pilot 3 | $0.141433 |
+| Full main corpus | $0.423328 |
+| Snapshot supplement | $0.084259 |
+| **Total** | **$0.858473** |
+
+Model snapshot: `claude-haiku-4-5-20251001`.
+
+Paid runs occurred only after source and test gates passed.
+
+## Scenario definitions
+
+| Regime | Policy rule | Interpretation |
 |---|---|---|
-| Current state system | Enacted state protections remain in force | Coverage and heterogeneity observed in coded statutes |
-| Federal ceiling | Covered state obligations are displaced | Protections removed and requirements standardized |
-| Federal floor | A national minimum applies; stronger state rules remain | National coverage gained while state protections are preserved |
+| Current state system | Active reviewed state obligations remain | Observed protection coverage and heterogeneity |
+| Broad federal ceiling | Selected state obligations set to zero | Upper-bound displacement benchmark |
+| EO 14365 carve-outs | Broad ceiling except child safety, infrastructure, government use | Targeted preservation benchmark |
+| Federal floor | `max(state strength, federal minimum)` | Geographic gaps closed while stricter state rules remain |
 
-## Why this question now
+See [`docs/final_analysis_protocol.md`](docs/final_analysis_protocol.md) and [`docs/policy_scenarios.md`](docs/policy_scenarios.md).
 
-The White House's March 20, 2026 legislative framework calls for a uniform national AI policy and warns that conflicting state rules could undermine innovation. Executive Order 14365, issued December 11, 2025, directs federal officials to evaluate and challenge certain state AI laws while preserving specified categories such as child safety, AI infrastructure, and state procurement. At the same time, states continue to legislate across consumer protection, health, children, automated decisions, and frontier AI.
+## Results files
 
-Primary institutional sources:
+- [`results/README.md`](results/README.md)
+- [`results/domain_coverage_2026-08-25.csv`](results/domain_coverage_2026-08-25.csv)
+- [`results/domain_coverage_2027-01-01.csv`](results/domain_coverage_2027-01-01.csv)
+- [`results/scenario_summary.csv`](results/scenario_summary.csv)
+- [`results/scenarios_by_domain_2026-08-25.csv`](results/scenarios_by_domain_2026-08-25.csv)
+- [`results/scenarios_by_domain_2027-01-01.csv`](results/scenarios_by_domain_2027-01-01.csv)
+- [`results/state_summary.csv`](results/state_summary.csv)
 
-- [White House national AI legislative framework, March 20, 2026](https://www.whitehouse.gov/releases/2026/03/president-donald-j-trump-unveils-national-ai-legislative-framework/)
-- [Executive Order 14365, December 11, 2025](https://www.whitehouse.gov/presidential-actions/2025/12/eliminating-state-law-obstruction-of-national-artificial-intelligence-policy/)
-- [NCSL Artificial Intelligence Legislation Database](https://www.ncsl.org/financial-services/artificial-intelligence-legislation-database)
-
-## Empirical design
-
-The primary sample is the universe of enacted U.S. state AI statutes from January 1, 2023 through the frozen collection date. Introduced but unenacted bills form a separate appendix and never enter the primary protection estimates.
+## Method
 
 The coding unit is:
 
 `state × law × enforceable obligation × regulated actor × sector × effective period`
 
-Each obligation is linked to the controlling statutory text, section or page, source URL, coder, confidence score, human-review status, operative start date, and verified inactivity date when applicable. Claude produces structured first-pass labels only. A human reviewer verifies every retained label against the primary text.
-
 A dated snapshot includes an obligation only when:
 
 `effective_date <= analysis_date < inactive_from_date`
 
-A blank inactivity date means no verified end date has been identified. Statutes with mixed section-level operative dates require an obligation-level effective date before a positive row can enter a dated estimate.
+The primary protection estimates use only substantive domains. Enforcement and scope rules remain in the review dataset but are not counted as substantive protection coverage.
 
-### Primary outcomes
+Population coverage for domain `d` is:
 
-1. **Protection coverage:** share of the U.S. population or relevant employment covered by an enforceable obligation.
-2. **Regulatory heterogeneity:** dispersion in obligation presence and strength across states. This is not labeled a compliance-cost estimate.
-3. **Preemption exposure:** protection coverage removed under a defined federal-ceiling scenario.
-4. **Preservation under a floor:** coverage retained when a federal minimum coexists with stronger state protections.
+`sum(population_s × 1[strength_sd >= 1]) / sum(population_s)`
 
-The project is descriptive and counterfactual. It does not estimate causal effects of regulation on innovation, compliance spending, safety, or welfare.
+Strength is an ordinal description of legal form:
 
-## Policy domains
+- 0 absent
+- 1 disclosure/reporting/documentation/procedure
+- 2 assessment/risk management/mitigation/evaluation/human review
+- 3 prohibition or individual right
 
-The codebook covers impact assessments, model evaluation, human oversight, notice, explanation or appeal, antidiscrimination, incident reporting, frontier-model safety, child protection, health restrictions, government procurement, enforcement authority, private rights of action, penalties, exemptions, and effective dates.
-
-## Reproducible workflow
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-
-# 1. Download primary legal text and record content hashes
-uaf fetch-sources --manifest config/source_manifest.csv
-
-# 2. Validate the source manifest and local statute texts
-uaf validate-sources --manifest config/source_manifest.csv
-
-# 3. Estimate API cost before making any call
-uaf estimate-cost --manifest config/source_manifest.csv
-
-# 4. Run a small synchronous pilot
-export ANTHROPIC_API_KEY="your-key-here"
-uaf code-laws --manifest config/source_manifest.csv --limit 10 --max-spend 1.00
-
-# 5. Review model labels, apply adjudications, then build a dated snapshot
-uaf apply-reviews
-uaf analyze \
-  --codings data/processed/codings_reviewed.csv \
-  --analysis-date 2026-08-25
-
-# 6. Run tests
-pytest
-```
-
-The API runner defaults to Claude Haiku 4.5, hashes every request, reuses cached responses, estimates cost before submission, and stops at a user-set spending ceiling. The full run should use Anthropic's Batch API after the pilot passes review.
+It is **not** a welfare score or an estimate of enforcement effectiveness.
 
 ## Research safeguards
 
-- Freeze the source universe and analysis plan before full coding.
-- Use primary legal text for final labels. NCSL supplies discovery metadata, not final legal interpretation.
-- Preserve amendment and supersession chains rather than treating enactment text as permanently current.
-- Require obligation-level dates for statutes with mixed operative dates.
-- Require a quotation and section reference for each positive code.
-- Double-code at least 20% of statutes and report agreement by domain.
-- Resolve disagreements without showing reviewers the simulated policy result.
-- Report low-frequency domains and missing source text explicitly.
-- Publish every scenario definition. Do not treat the broad-preemption simulation as a prediction of judicial outcomes.
+- Primary legal text controls final coding; trackers are discovery aids.
+- Amendment and supersession chains are preserved.
+- Mixed-effective-date statutes require obligation-level dates.
+- Positive rows require a statutory quotation and section reference.
+- Missing provisions found in omnibus laws are added as explicit manual-recovery rows rather than treated as state-level zeros.
+- The broad-ceiling simulation is a bounding counterfactual, not a legal prediction.
+- Independent human review remains required before publication-grade confirmatory claims.
 
 ## Repository structure
 
 ```text
-config/                 policy domains, sources, and scenario parameters
-data/                   raw-text instructions and generated outputs
-docs/                   research design, codebook, validation, and policy scenarios
-paper/                  pre-analysis manuscript and result placeholders
-src/us_ai_federalism/   ingestion, coding, validation, metrics, and figures
-tests/                  synthetic unit and integration tests
-tools/                  reproducible command-line helpers
+config/                 source universe, domains, scenario inputs
+data/                   runtime legal text and validation outputs
+docs/                   research design, validation, literature, final protocol
+figures/                vector figures from provisional results
+paper/                  working paper
+results/                provisional empirical tables
+src/us_ai_federalism/   ingestion, coding, temporal logic, metrics
+tests/                  unit and integration tests
+tools/                  reproducible helpers
 ```
 
 ## Author
